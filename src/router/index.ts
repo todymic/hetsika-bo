@@ -7,6 +7,7 @@ const router = createRouter({
     {
       path: '/auth',
       meta: { requiresAuth: false },
+      component: () => import('@/views/auth/AuthLayoutView.vue'),
       name: 'auth',
       children: [
         {
@@ -55,6 +56,12 @@ const router = createRouter({
           meta: { title: 'Dashboard' }
         }
       ]
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "not-found",
+      component: () => import("@/views/errors/NotFoundView.vue"),
+      meta: { public: true },
     },
   ],
 })

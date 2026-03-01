@@ -33,35 +33,46 @@ type MeResponse = {
 }
 
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
-
-
-
 const useAuthStore = defineStore('authStore', () => {
 
-  const user: Ref<Organizer | null> = ref<Organizer | null>(
-    localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null
-  );
+  function safeParseUser(): Organizer | null {
+    const raw = localStorage.getItem(AUTH_USER);
+    if (!raw || raw === 'undefined' || raw === 'null') return null;
+    return JSON.parse(raw) as Organizer;
+  }
+
+  const user: Ref<Organizer | null> = ref<Organizer | null>(safeParseUser());
 
   const isAuthInitialized: Ref<boolean> = ref(false);
   const isAuthenticated = computed(() => !!user.value);
+
+  const axiosInstance = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+    withCredentials: true,
+  });
+
+
+  // interceptors to handle 401 and 403 errors
+  axiosInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        frontLogout();
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const initAuth = async () => {
     try {
       await getMe();
     } catch (e: any) {
-      logout();
+      frontLogout();
     } finally {
       isAuthInitialized.value = true;
     }
   };
-
-
-
-
 
   const login = async (credentials: LoginCredentials) => {
     const response = await axiosInstance.post('/organizer/login', credentials)
@@ -94,14 +105,13 @@ const useAuthStore = defineStore('authStore', () => {
   const logout = async () => {
     const response = await axiosInstance.get('/organizer/logout');
     if(response.status === 204) {
-      await frontLogout();
+      frontLogout();
     }
 
   }
-  async function frontLogout() {
+  function frontLogout() {
     localStorage.removeItem(AUTH_USER);
     user.value = null;
-    await router.push({name: 'login'})
   }
 
 
@@ -113,7 +123,7 @@ const useAuthStore = defineStore('authStore', () => {
     isAuthenticated,
     isAuthInitialized,
     initAuth,
-    frontLogout
+    logout,
   }
 });
 
