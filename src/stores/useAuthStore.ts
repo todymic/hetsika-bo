@@ -25,6 +25,8 @@ export type Organizer = {
    email: string;
    password: string;
    roles: role[];
+   fullName: string;
+
 }
 
 type MeResponse = {
@@ -97,6 +99,7 @@ const useAuthStore = defineStore('authStore', () => {
     if(response.status == 200) {
       const me = response.data as MeResponse;
       user.value = me.me;
+      user.value.fullName = `${user.value.firstName} ${user.value.lastName}`;
       localStorage.setItem(AUTH_USER, JSON.stringify(user.value));
     }
 

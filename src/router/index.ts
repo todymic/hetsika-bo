@@ -11,32 +11,32 @@ const router = createRouter({
       name: 'auth',
       children: [
         {
-          path: '/login',
+          path: 'login',
           name: 'login',
           component: () => import('@/views/auth/LoginView.vue'),
         },
         {
-          path: '/register',
+          path: 'register',
           name: 'register',
           component: () => import('@/views/auth/RegisterView.vue')
         },
         {
-          path: '/reset-password',
+          path: 'reset-password',
           name: 'resetpassword',
           component: () => import('@/views/auth/reset-password/ResetPasswordLayoutView.vue'),
           children: [
             {
-              path: '/send-email',
+              path: 'send-email',
               name: 'sendmail',
               component: () => import("@/views/auth/reset-password/ResetPasswordFormView.vue")
             },
             {
-              path: '/send-email/confirmation',
+              path: 'send-email/confirmation',
               name: 'sendmailconfiramtion',
               component: () => import("@/views/auth/reset-password/SendEmailConfirmationView.vue")
             },
             {
-              path: '/reinit',
+              path: 'reinit',
               name: 'reinitpassword',
               component: () => import("@/views/auth/reset-password/ReinitPasswordView.vue")
             }
