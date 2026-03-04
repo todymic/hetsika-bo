@@ -4,37 +4,57 @@ import { useToast, Button, Password, Message } from 'primevue'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
+import { computed } from "vue"
+import { useI18n } from 'vue-i18n'
+import useAuthStore, { type ReinitPasswordPayload } from "@/stores/useAuthStore.ts"
 
 const router = useRouter()
 const toast  = useToast()
+const auth   = useAuthStore()
+const { t }  = useI18n()
+
+const token = computed(() => (router.currentRoute.value.query.token as string) || "")
 
 const resolver = zodResolver(
   z.object({
     password: z.string()
-      .min(8, { message: 'At least 8 characters' })
-      .regex(/[A-Z]/, { message: 'At least one uppercase letter' })
-      .regex(/[0-9]/, { message: 'At least one number' }),
-    confirmPassword: z.string().min(1, { message: 'Please confirm your password' }),
+      .min(8,        { message: t('auth.validation.password_min') })
+      .regex(/[A-Z]/, { message: t('auth.validation.password_uppercase') })
+      .regex(/[0-9]/, { message: t('auth.validation.password_number') }),
+    confirmPassword: z.string().min(1, { message: t('auth.validation.confirm_required') }),
   }).refine(d => d.password === d.confirmPassword, {
-    message: "Passwords don't match",
+    message: t('auth.validation.passwords_mismatch'),
     path: ['confirmPassword'],
   })
 )
 
 const onFormSubmit = ({ valid, values }: any) => {
   if (valid) {
-    // call your reset password API here
-    console.log('New password:', values.password)
-    toast.add({ severity: 'success', summary: 'Password updated!', detail: 'You can now sign in.', life: 3000 })
-    router.push('/login')
+    const payload: ReinitPasswordPayload = {
+      token: token.value,
+      ...values
+    }
+
+    auth.reinitPassword(payload)
+      .then(() => {
+        toast.add({ severity: 'success', summary: t('toast.password_reset_summary'), detail: t('toast.password_reset_detail'), life: 3000 })
+        router.push({ name: 'login' })
+      })
+      .catch((error: any) => {
+        toast.add({ severity: 'error', summary: t('auth.reinit_password.reset_password_error_summary'), detail: error.message, life: 4000 })
+
+        setTimeout(() => {
+          router.push({ name: 'login' })
+        }, 4000)
+      })
   }
 }
 
-const passwordRequirements = [
-  { label: 'At least 8 characters',    regex: /.{8,}/ },
-  { label: 'One uppercase letter',       regex: /[A-Z]/ },
-  { label: 'One number',                 regex: /[0-9]/ },
-]
+const passwordRequirements = computed(() => [
+  { label: t('auth.reinit_password.requirements.min_chars'), regex: /.{8,}/ },
+  { label: t('auth.reinit_password.requirements.uppercase'), regex: /[A-Z]/ },
+  { label: t('auth.reinit_password.requirements.number'),    regex: /[0-9]/ },
+])
 </script>
 
 <template>
@@ -47,19 +67,17 @@ const passwordRequirements = [
     </div>
 
     <div class="reinit-box__head">
-      <h2 class="reinit-box__title">Set new password</h2>
-      <p class="reinit-box__sub">
-        Your new password must be different from your previous ones.
-      </p>
+      <h2 class="reinit-box__title">{{ t('auth.reinit_password.title') }}</h2>
+      <p class="reinit-box__sub">{{ t('auth.reinit_password.subtitle') }}</p>
     </div>
 
     <Form v-slot="$form" :resolver @submit="onFormSubmit" class="reinit-box__form">
 
       <div class="field">
-        <label class="field__label">New password</label>
+        <label class="field__label">{{ t('auth.reinit_password.new_label') }}</label>
         <Password
           name="password"
-          placeholder="Min. 8 characters"
+          :placeholder="t('auth.reinit_password.new_placeholder')"
           toggleMask
           fluid
           :invalid="$form.password?.invalid"
@@ -84,10 +102,10 @@ const passwordRequirements = [
       </div>
 
       <div class="field">
-        <label class="field__label">Confirm new password</label>
+        <label class="field__label">{{ t('auth.reinit_password.confirm_label') }}</label>
         <Password
           name="confirmPassword"
-          placeholder="Repeat your password"
+          :placeholder="t('auth.reinit_password.confirm_placeholder')"
           :feedback="false"
           toggleMask
           fluid
@@ -98,12 +116,12 @@ const passwordRequirements = [
         </Message>
       </div>
 
-      <Button type="submit" label="Reset password" fluid icon="pi pi-check" />
+      <Button type="submit" :label="t('auth.reinit_password.submit')" fluid icon="pi pi-check" />
     </Form>
 
-    <router-link to="/login" class="reinit-box__back">
+    <router-link to="/auth/login" class="reinit-box__back">
       <i class="pi pi-arrow-left" />
-      Back to sign in
+      {{ t('auth.reinit_password.back') }}
     </router-link>
 
   </div>

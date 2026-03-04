@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Button, InputText, Message } from 'primevue'
+import {Button, InputText, Message, useToast} from 'primevue'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { useI18n } from 'vue-i18n'
+import useAuthStore from "@/stores/useAuthStore.ts";
 
 const { t } = useI18n()
 const router = useRouter()
+const auth = useAuthStore()
+const toast = useToast()
 
 const resolver = zodResolver(
   z.object({
@@ -17,8 +20,15 @@ const resolver = zodResolver(
 
 const onFormSubmit = ({ valid, values }: any) => {
   if (valid) {
-    console.log('Send reset to:', values.email)
-    router.push('/auth/reset-password/send-email/confirmation')
+    auth.sendPasswordResetEmail(values.email)
+      .then(() => {
+        router.push('/auth/reset-password/send-email/confirmation')
+      })
+      .catch((error: any) => {
+        toast.add({ severity: 'error', summary: t('toast.reset_password_error_summary'),
+          detail: error.message,
+          life: 4000 })
+      })
   }
 }
 </script>

@@ -35,6 +35,12 @@ type MeResponse = {
 }
 
 
+export type ReinitPasswordPayload = {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const useAuthStore = defineStore('authStore', () => {
 
   function safeParseUser(): Organizer | null {
@@ -61,6 +67,7 @@ const useAuthStore = defineStore('authStore', () => {
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
         frontLogout();
+        //await router.push({name: 'login'});
       }
       return Promise.reject(error);
     }
@@ -109,19 +116,27 @@ const useAuthStore = defineStore('authStore', () => {
     const response = await axiosInstance.get('/organizer/logout');
     if(response.status === 204) {
       frontLogout();
+      await router.push({name: 'login'});
     }
 
   }
   function frontLogout() {
     localStorage.removeItem(AUTH_USER);
     user.value = null;
-    router.push({name: 'login'});
+
   }
 
   const verifyEmail = async (signedUrl: string) => {
     return await axiosInstance.get(signedUrl);
   }
 
+  const sendPasswordResetEmail = async (email: string) => {
+    return await axiosInstance.post('/organizer/reset-password/send-email', {email});
+  }
+
+  const reinitPassword = async (payload: ReinitPasswordPayload) => {
+    return await axiosInstance.post('/organizer/reset-password/reinit', payload);
+  }
 
   return {
     login,
@@ -132,7 +147,9 @@ const useAuthStore = defineStore('authStore', () => {
     isAuthInitialized,
     initAuth,
     logout,
-    verifyEmail
+    verifyEmail,
+    sendPasswordResetEmail,
+    reinitPassword
   }
 });
 
