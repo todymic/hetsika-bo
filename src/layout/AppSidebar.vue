@@ -94,7 +94,7 @@ const logout   = () => { auth.logout(); router.push('/auth/login') }
         <Transition name="label-fade">
           <div v-if="!collapsed" class="sidebar__user-info">
             <span class="sidebar__user-name">{{ auth.user?.fullName || 'User' }}</span>
-            <span class="sidebar__user-role">{{ t('sidebar.role') }}</span>
+            <span class="sidebar__user-role">{{ t('sidebar.r:=ole') }}</span>
           </div>
         </Transition>
         <Transition name="label-fade">

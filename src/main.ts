@@ -6,7 +6,7 @@ import router from './router'
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura'
-import {Button, Toast, ToastService} from "primevue";
+import {Toast, ToastService} from "primevue";
 import { Form } from '@primevue/forms';
 
 import Tooltip from 'primevue/tooltip'

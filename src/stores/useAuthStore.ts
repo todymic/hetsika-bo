@@ -69,7 +69,7 @@ const useAuthStore = defineStore('authStore', () => {
   const initAuth = async () => {
     try {
       await getMe();
-    } catch (e: any) {
+    } catch (_: any) {
       frontLogout();
     } finally {
       isAuthInitialized.value = true;
@@ -115,6 +115,11 @@ const useAuthStore = defineStore('authStore', () => {
   function frontLogout() {
     localStorage.removeItem(AUTH_USER);
     user.value = null;
+    router.push({name: 'login'});
+  }
+
+  const verifyEmail = async (signedUrl: string) => {
+    return await axiosInstance.get(signedUrl);
   }
 
 
@@ -127,6 +132,7 @@ const useAuthStore = defineStore('authStore', () => {
     isAuthInitialized,
     initAuth,
     logout,
+    verifyEmail
   }
 });
 
