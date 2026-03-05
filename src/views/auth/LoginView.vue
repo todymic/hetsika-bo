@@ -25,11 +25,15 @@ const onFormSubmit = ({ valid, values }: any) => {
     const auth = useAuthStore()
     auth.login(values)
       .then(() => {
-        toast.add({ severity: 'success', summary: t('toast.login_success_summary'), detail: t('toast.login_success_detail'), life: 3000 })
+        toast.add({ severity: 'success', summary: t('login.login_success_summary'), life: 3000 })
         router.push('/')
       })
       .catch((error: any) => {
-        toast.add({ severity: 'error', summary: t('toast.login_error_summary'), detail: error.message, life: 4000 })
+        toast.add({
+          severity: 'error',
+          summary: t('auth.login.error_summary'),
+          life: 4000
+        })
       })
   }
 }
