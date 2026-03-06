@@ -6,11 +6,11 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { computed } from "vue"
 import { useI18n } from 'vue-i18n'
-import useAuthStore, { type ReinitPasswordPayload } from "@/stores/useAuthStore.ts"
+import authStore, { type ReinitPasswordPayload } from "@/stores/authStore.ts"
 
 const router = useRouter()
 const toast  = useToast()
-const auth   = useAuthStore()
+const auth   = authStore()
 const { t }  = useI18n()
 
 const token = computed(() => (router.currentRoute.value.query.token as string) || "")

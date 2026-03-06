@@ -5,11 +5,11 @@ import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { useI18n } from 'vue-i18n'
-import useAuthStore from "@/stores/useAuthStore.ts";
+import authStore from "@/stores/authStore.ts";
 
 const { t } = useI18n()
 const router = useRouter()
-const auth = useAuthStore()
+const auth = authStore()
 const toast = useToast()
 
 const resolver = zodResolver(

@@ -22,10 +22,10 @@ export type Organizer = {
     id: number;
    firstName: string;
    lastName: string;
-   email: string;
-   password: string;
-   roles: role[];
-   fullName: string;
+   email?: string;
+   password?: string;
+   roles?: role[];
+   fullName?: string;
 
 }
 
@@ -41,7 +41,7 @@ export type ReinitPasswordPayload = {
   confirmPassword: string;
 }
 
-const useAuthStore = defineStore('authStore', () => {
+const authStore = defineStore('authStore', () => {
 
   function safeParseUser(): Organizer | null {
     const raw = localStorage.getItem(AUTH_USER);
@@ -153,4 +153,4 @@ const useAuthStore = defineStore('authStore', () => {
   }
 });
 
-export default useAuthStore;
+export default authStore;

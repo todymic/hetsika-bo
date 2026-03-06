@@ -14,11 +14,14 @@ const router = createRouter({
           path: 'login',
           name: 'login',
           component: () => import('@/views/auth/LoginView.vue'),
+          meta: { title: 'Login' }
         },
         {
           path: 'register',
           name: 'register',
-          component: () => import('@/views/auth/RegisterView.vue')
+          component: () => import('@/views/auth/RegisterView.vue'),
+          meta: { title: 'Register' }
+
         },
         {
           path: 'reset-password',
@@ -45,7 +48,8 @@ const router = createRouter({
         {
           path: 'verify-email',
           name: 'verifyemail',
-          component: () => import("@/views/auth/reset-password/EmailVerifiedConfirmation.vue")
+          component: () => import("@/views/auth/reset-password/EmailVerifiedConfirmation.vue"),
+          meta: { title: 'Verify Email' }
         }
       ]
     },
@@ -59,6 +63,37 @@ const router = createRouter({
           component: () => import('@/views/DashboardView.vue'),
           name: 'dashboard',
           meta: { title: 'Dashboard' }
+        },
+        {
+          path: 'events',
+          name: 'events',
+          meta: { title: 'Events' },
+          children: [
+            {
+              path: 'list',
+              component: () => import('@/views/events/EventListView.vue'),
+              name: 'eventslist',
+              meta: { title: 'Events List' }
+            },
+            {
+              path: 'new',
+              component: () => import('@/views/events/step/EventStepView.vue'),
+              name: 'createevent',
+              meta: { title: 'New Event' }
+            },
+            {
+              path: ':id/edit',
+              component: () => import('@/views/events/step/EventStepView.vue'),
+              name: 'editevent',
+              meta: { title: 'New Event' }
+            },
+            {
+              path: ':id/show',
+              component: () => import('@/views/events/show/EventView.vue'),
+              name: 'showevent',
+              meta: { title: 'Show Event' }
+            }
+          ]
         }
       ]
     },

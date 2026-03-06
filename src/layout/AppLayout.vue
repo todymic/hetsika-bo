@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Button, Avatar, Breadcrumb } from 'primevue'
 import { useI18n } from 'vue-i18n'
-import useAuthStore from '@/stores/useAuthStore'
+import authStore from '@/stores/authStore.ts'
 import AppSidebar from '@/layout/AppSidebar.vue'
 
 const { t } = useI18n()
 const route  = useRoute()
-const auth   = useAuthStore()
+const auth   = authStore()
 
 const collapsed  = ref(false)
 const mobileOpen = ref(false)

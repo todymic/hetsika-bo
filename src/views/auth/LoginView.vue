@@ -6,7 +6,7 @@ import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { useI18n } from 'vue-i18n'
-import useAuthStore from '@/stores/useAuthStore'
+import authStore from '@/stores/authStore.ts'
 
 const { t } = useI18n()
 const router  = useRouter()
@@ -22,7 +22,7 @@ const resolver = zodResolver(
 
 const onFormSubmit = ({ valid, values }: any) => {
   if (valid) {
-    const auth = useAuthStore()
+    const auth = authStore()
     auth.login(values)
       .then(() => {
         toast.add({ severity: 'success', summary: t('login.login_success_summary'), life: 3000 })

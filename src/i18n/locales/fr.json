@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "analytics": "Analytiques",
+    "events": "Evènements",
     "users": "Utilisateurs",
     "projects": "Projets",
     "messages": "Messages",
@@ -224,5 +225,42 @@
     "register_success_detail": "Vous pouvez maintenant vous connecter.",
     "password_reset_summary": "Mot de passe mis à jour !",
     "password_reset_detail": "Vous pouvez maintenant vous connecter."
+  },
+  "events": {
+    "create": {
+      "page_title": "Créer un événement",
+      "page_subtitle": "Remplissez chaque étape pour publier votre événement",
+
+      "steps": {
+        "informations": "Informations",
+        "localisation": "Localisation",
+        "billets": "Billets",
+        "dates": "Dates"
+      },
+
+      "info": {
+        "title": "Informations générales",
+        "subtitle": "Titre, catégories et image de couverture"
+      },
+      "localisation": {
+        "title": "Localisation",
+        "subtitle": "Adresse complète du lieu"
+      },
+      "tickets": {
+        "title": "Types de billets",
+        "subtitle": "Définissez les catégories de billets disponibles",
+        "subtitle_mobile": "Types & tarifs disponibles"
+      },
+      "dates": {
+        "title": "Dates",
+        "subtitle": "Planifiez le début et la fin"
+      },
+
+      "actions": {
+        "next": "Suivant",
+        "back": "Retour",
+        "submit": "Créer l'événement"
+      }
+    }
   }
 }

@@ -1,15 +1,15 @@
 import { type Router } from "vue-router";
-import useAuthStore from "@/stores/useAuthStore.ts";
+import authStore from "@/stores/authStore.ts";
 
 export function navigationGuard(router: Router) {
   router.beforeEach(async (to) => {
-    const authStore = useAuthStore();
+    const auth = authStore();
 
-    if (!authStore.isAuthInitialized) {
-      await authStore.initAuth();
+    if (!auth.isAuthInitialized) {
+      await auth.initAuth();
     }
 
-    if (to.meta?.requiresAuth && !authStore.isAuthenticated) {
+    if (to.meta?.requiresAuth && !auth.isAuthenticated) {
       return { name: "login" };
     }
 

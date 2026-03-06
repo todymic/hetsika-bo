@@ -2,7 +2,7 @@
 import { useRouter, useRoute } from 'vue-router'
 import { Button, Avatar } from 'primevue'
 import { useI18n } from 'vue-i18n'
-import useAuthStore from '@/stores/useAuthStore'
+import authStore from '@/stores/authStore.ts'
 
 defineProps<{ collapsed: boolean; mobileOpen: boolean }>()
 const emit = defineEmits<{
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const router = useRouter()
 const route  = useRoute()
-const auth   = useAuthStore()
+const auth   = authStore()
 
 const navGroups = [
   {
@@ -26,8 +26,9 @@ const navGroups = [
   {
     labelKey: 'nav.groups.management',
     items: [
+      { labelKey: 'nav.events',    icon: 'pi-stars',     to: '/events/list' },
       { labelKey: 'nav.users',    icon: 'pi-users',     to: '/users' },
-      { labelKey: 'nav.projects', icon: 'pi-briefcase', to: '/projects' },
+      { labelKey: 'nav.orders', icon: 'pi-order', to: '/projects' },
       { labelKey: 'nav.messages', icon: 'pi-envelope',  to: '/messages', badge: 4 },
       { labelKey: 'nav.calendar', icon: 'pi-calendar',  to: '/calendar' },
     ]

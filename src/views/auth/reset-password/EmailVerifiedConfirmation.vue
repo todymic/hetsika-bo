@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import useAuthStore from "@/stores/useAuthStore.ts";
+import authStore from "@/stores/authStore.ts";
 import {computed, onMounted, ref} from "vue";
 import {useToast} from "primevue";
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
-const auth = useAuthStore()
+const auth = authStore()
 const toast = useToast()
 const isLoading = ref(true)
 const status = ref<'loading' | 'success' | 'error'>('loading')
