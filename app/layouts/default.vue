@@ -3,6 +3,7 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
 const toast = useToast()
+const { t } = useI18n()
 
 const open = ref(false)
 
@@ -16,7 +17,9 @@ const links = [
     open.value = false
   }
 }, {
-    label: 'Even',
+    label: t('event'),
+    icon: 'i-material-symbols-event-seat-outline',
+    to: '/events',
   },
     {
   label: 'Inbox',

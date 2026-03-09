@@ -1,0 +1,89 @@
+{
+  "event": "evenement",
+  "common": {
+    "next":   "Suivant",
+    "back":   "Retour",
+    "save":   "Enregistrer",
+    "add":    "Ajouter",
+    "cancel": "Annuler",
+    "error":  "Erreur"
+  },
+  "events": {
+    "stats": {
+      "total":     "Total",
+      "published": "Publiés",
+      "draft":     "Brouillons",
+      "cancelled": "Annulés"
+    },
+    "status": {
+      "all":       "Tous les statuts",
+      "published": "Publié",
+      "draft":     "Brouillon",
+      "cancelled": "Annulé"
+    },
+    "list": {
+      "search":     "Rechercher un événement…",
+      "add":        "Nouvel événement",
+      "empty":      "Aucun événement trouvé",
+      "col_title":  "Titre",
+      "col_status": "Statut",
+      "col_date":   "Date de début",
+      "col_location": "Lieu"
+    },
+    "create": {
+      "steps": {
+        "info":         "Informations",
+        "localisation": "Localisation",
+        "tickets":      "Billets",
+        "dates":        "Dates"
+      },
+      "info": {
+        "subtitle":               "Titre, catégories et description",
+        "title_label":            "Titre de l'événement",
+        "title_placeholder":      "Ex : Festival Jazz au Parc",
+        "desc_label":             "Description",
+        "desc_placeholder":       "Décrivez votre événement…",
+        "categories_label":       "Catégories",
+        "categories_placeholder": "Sélectionnez des catégories"
+      },
+      "localisation": {
+        "subtitle": "Adresse complète du lieu",
+        "street":   "Rue",
+        "city":     "Ville",
+        "zip":      "Code postal",
+        "state":    "Région / État"
+      },
+      "tickets": {
+        "subtitle": "Définissez les types de billets disponibles"
+      },
+      "dates": {
+        "subtitle": "Planifiez le début et la fin",
+        "start":    "Date de début",
+        "end":      "Date de fin",
+        "error":    "La date de fin doit être après la date de début"
+      },
+      "actions": {
+        "submit": "Créer l'événement"
+      },
+      "toast": {
+        "step1":   "Informations enregistrées",
+        "step2":   "Localisation enregistrée",
+        "step3":   "Billets enregistrés",
+        "success": "Événement créé avec succès !"
+      }
+    },
+    "tickets": {
+      "add":              "Ajouter un billet",
+      "new":              "Nouveau type de billet",
+      "edit":             "Modifier le billet",
+      "empty":            "Aucun type de billet ajouté",
+      "active":           "Actif",
+      "inactive":         "Inactif",
+      "col_name":         "Nom",
+      "col_price":        "Prix",
+      "col_qty":          "Quantité",
+      "col_status":       "Statut",
+      "name_placeholder": "Ex : VIP, Standard…"
+    }
+  }
+}

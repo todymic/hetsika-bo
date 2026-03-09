@@ -7,7 +7,14 @@ export default defineNuxtConfig({
      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://localhost:8000/api/v1'
    }
  },
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt', '@pinia/nuxt', '@nuxtjs/i18n'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt', '@pinia/nuxt', '@nuxtjs/i18n', '@nuxt/icon'],
+  i18n: {
+    locales: [
+      { code: 'fr', language: 'fr-FR', file: 'fr.json' },
+      { code: 'en', language: 'en-US', file: 'en.json' }
+    ],
+    defaultLocale: 'fr'
+  },
 
   devtools: {
     enabled: true
