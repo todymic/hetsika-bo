@@ -30,6 +30,14 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const { postRaw, getRaw, get } = useApi()
 
+  const initAuth = async () => {
+    try {
+      await getMe();
+    } catch (e: any) {
+      userCookie.value = null
+    }
+  };
+
   const login = async (userData: UserLogin) => {
     const response = await postRaw('/organizer/login', userData)
     if (response.status === 204) {
@@ -71,6 +79,7 @@ export const useAuthStore = defineStore('authStore', () => {
     login,
     logout,
     getMe,
-    register
+    register,
+    initAuth
   }
 })

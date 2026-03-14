@@ -2,17 +2,17 @@
 export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
 
 export  interface Event {
-  id: number,
-  title: string,
+  id?: number|undefined,
+  title?: string,
   description: string,
   startAt: Date,
-  endAt: Date | null,
+  endAt?: Date | null,
   status: EventStatus,
-  address: Address,
+  address?: Address,
   organizer: Organizer,
   categories: Category[],
-  medias: Media[],
-  createdAt: Date
+  medias?: Media[],
+  createdAt?: Date
 }
 
 export interface Address {
@@ -40,10 +40,11 @@ export interface Category {
 export interface Media {
   id: number,
   url: string,
-  type: 'IMAGE' | 'VIDEO',
   mimeType: string,
   originalName: string,
   width: number,
   height: number,
-  createdAt: Date
+  createdAt: Date,
+  isCover?: boolean,
+  caption?: string
 }

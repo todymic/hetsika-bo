@@ -18,9 +18,11 @@ export const useApi = () => {
   const put  = <T>(url: string, body: any) => $fetch<T>(url, options('PUT', body))
   const del  = <T>(url: string) => $fetch<T>(url, options('DELETE'))
 
+  const patch = <T>(url: string, body: any) => $fetch<T>(url, options('PATCH', body))
+
   // Versions raw — accès au status code
   const getRaw  = <T>(url: string) => $fetch.raw<T>(url, options())
   const postRaw = <T>(url: string, body: any) => $fetch.raw<T>(url, options('POST', body))
 
-  return { get, post, put, del, getRaw, postRaw }
+  return { get, post, put, del, getRaw, postRaw, patch }
 }

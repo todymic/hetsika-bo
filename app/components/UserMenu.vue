@@ -7,15 +7,16 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
+const auth = useAuthStore()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = ref({
-  name: 'Benjamin Canac',
+  name: `${auth.user?.firstName} ${auth.user?.lastName}` ,
   avatar: {
     src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+    alt: `${auth.user?.firstName} ${auth.user?.lastName}`
   }
 })
 

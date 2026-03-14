@@ -4,7 +4,9 @@ import {useApi} from "~/composables/useApi";
 import {useAuthStore} from "~/stores/authStore";
 
 interface getEventsResponse {
-  events: Event[]
+  items: Event[],
+  hasNextPage: boolean,
+  nextCursor: number | null,
   status: string
 }
 
@@ -16,21 +18,43 @@ interface CreateEventRequest {
 }
 export const useEventStore = defineStore('event', () => {
 
-  const { get, post, put, del } = useApi()
+  const { get, post, put, del, patch } = useApi()
 
   const auth = useAuthStore()
 
-  const getEvents = async (): Promise<Event[]> => {
-    const response = await get<getEventsResponse>(`/public/organizer/${auth.user?.id}/events`)
-    return response.events as Event[];
+  const getEvents = async (cursor: number, limit?: number, term?: string): Promise<getEventsResponse> => {
+    let url = `/public/organizers/${auth.user?.id}/events?cursor=${cursor}&limit=${limit || 10}`
+    if(term !== null && term !== undefined && term !== '') {
+        url += `&term=${term}`
+    }
+    return await get<getEventsResponse>(url);
   }
 
   const createEvent = async (event: CreateEventRequest) => {
-    const response = await post(`/public/organizer/${auth.user?.id}/events`, event)
+    const response = await post(`/public/organizer/events`, event)
     return response as Event;
   }
 
+  const updateEvent = async (event: Event) => {}
+
+  const deleteEvent = async (id: number) => {
+    return await del(`/organizer/events/${id}`)
+  }
+
+  const getEvent = async (id: number) => {
+    return await get(`/public/organizer/${auth.user?.id}/events/${id}`)
+  }
+
+  const updateStatus = async (id: number, status: string) => {
+    return await patch(`/organizer/events/${id}/status`, {status})
+  }
+
   return {
-    getEvents
+    getEvents,
+    createEvent,
+    deleteEvent,
+    updateEvent,
+    getEvent,
+    updateStatus,
   }
 });

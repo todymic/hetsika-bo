@@ -1,5 +1,5 @@
 {
-  "event": "evenement",
+
   "common": {
     "next":   "Suivant",
     "back":   "Retour",
@@ -9,10 +9,18 @@
     "error":  "Erreur"
   },
   "events": {
+    "page_title": "Liste des évenements",
+    "sections": {
+      "stats": "Statistiques"
+    },
+
+    "header": {
+      "title": "Gestion des évènements"
+    },
     "stats": {
       "total":     "Total",
       "published": "Publiés",
-      "draft":     "Brouillons",
+      "drafts":     "Brouillons",
       "cancelled": "Annulés"
     },
     "status": {
@@ -22,13 +30,25 @@
       "cancelled": "Annulé"
     },
     "list": {
-      "search":     "Rechercher un événement…",
-      "add":        "Nouvel événement",
-      "empty":      "Aucun événement trouvé",
-      "col_title":  "Titre",
-      "col_status": "Statut",
-      "col_date":   "Date de début",
-      "col_location": "Lieu"
+      "search": "Rechercher un évènement",
+      "participants":          "0 participant | {count} participant | {count} participants",
+      "deleted":              "Événement supprimé",
+      "status_updated":       "Statut mis à jour",
+      "publish":              "Publier",
+      "unpublish":            "Dépublier",
+      "edit":                 "Modifier",
+      "delete":               "Supprimer",
+      "no_results":           "Aucun résultat",
+      "no_results_hint":      "Essayez un autre terme de recherche",
+      "empty_hint":           "Créez votre premier événement",
+      "delete_confirm_title": "Supprimer l'événement",
+      "delete_confirm_body":  "Cette action est irréversible. L'événement sera définitivement supprimé.",
+      "add": "Nouvel évènement",
+      "empty": "Aucun évènement disponible",
+      "loading_more": "Chargement des événements...",
+      "see_more":    "Voir d'autres événements",
+      "all_loaded":  "Tous les événements sont affichés ({count})"
+
     },
     "create": {
       "steps": {
