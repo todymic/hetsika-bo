@@ -4,7 +4,7 @@ export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
 export  interface Event {
   id?: number|undefined,
   title?: string,
-  description: string,
+  description?: string,
   startAt: Date,
   endAt?: Date | null,
   status: EventStatus,

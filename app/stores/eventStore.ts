@@ -21,16 +21,25 @@ interface getGlobalStatsResponse {
   stats: GlobalStats,
   status: "success" | "error"
 }
+
+interface FilterParam {
+  term?: string
+  status?: string
+}
 export const useEventStore = defineStore('event', () => {
 
   const { get, post, put, del, patch } = useApi()
 
   const auth = useAuthStore()
 
-  const getEvents = async (cursor: number, limit?: number, term?: string): Promise<getEventsResponse> => {
+  const getEvents = async (cursor: number, limit?: number, filterParam?: FilterParam): Promise<getEventsResponse> => {
     let url = `/public/organizers/${auth.user?.id}/events?cursor=${cursor}&limit=${limit || 10}`
-    if(term !== null && term !== undefined && term !== '') {
-        url += `&term=${term}`
+    if(filterParam?.term !== null && filterParam?.term !== undefined && filterParam?.term !== '') {
+        url += `&term=${filterParam?.term}`
+    }
+
+    if(filterParam?.status !== null && filterParam?.status !== undefined && filterParam?.status !== '') {
+      url += `&status=${filterParam?.status}`
     }
     return await get<getEventsResponse>(url);
   }

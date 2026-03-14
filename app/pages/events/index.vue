@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Event, EventStatus } from '~/types/model'
 import { useEventStore } from '~/stores/eventStore'
+import {useDevice} from "~/composables/useDevice";
 
 const { t }      = useI18n()
 const toast      = useToast()
 const eventStore = useEventStore()
+const { isDesktop, isMobile } = useDevice()
 
 // ─────────────────────────────────────
 // Infinite scroll — cursor pagination
@@ -23,17 +25,18 @@ const nextCursor  = ref<number>(0)
 const hasMore     = ref(false)
 
 const sentinel = ref<HTMLElement | null>(null)
+const initEvents = [];
 
 const buildParams = () => ({
-  search: search.value || undefined,
+  term: search.value || undefined,
   status: statusFilter.value !== 'ALL' ? statusFilter.value : undefined,
 })
 
 // Initial fetch — replaces the list
-const fetchEvents = async (term?: string) => {
+const fetchEvents = async (filterParam?: { search?: string, status?: EventStatus }) => {
   pending.value = true
   try {
-    const res: PaginatedResponse = await eventStore.getEvents(0, PAGE_SIZE, term)
+    const res: PaginatedResponse = await eventStore.getEvents(0, PAGE_SIZE, filterParam)
     events.value     = res.items
     hasMore.value    = res.hasNextPage
     nextCursor.value = res.nextCursor ?? 0
@@ -51,7 +54,7 @@ const loadMore = async () => {
   if (!hasMore.value || loadingMore.value || pending.value) return
   loadingMore.value = true
   try {
-    const res: PaginatedResponse = await eventStore.getEvents(nextCursor.value, PAGE_SIZE, search.value)
+    const res: PaginatedResponse = await eventStore.getEvents(nextCursor.value, PAGE_SIZE, buildParams())
     events.value     = [...events.value, ...res.items]
     hasMore.value    = res.hasNextPage
     nextCursor.value = res.nextCursor ?? 0
@@ -84,16 +87,20 @@ onUnmounted(() => observer?.disconnect())
 const search       = ref('')
 const statusFilter = ref<EventStatus | 'ALL'>('ALL')
 
-const resetAndFetch = () => {
+
+const resetAndFetch = async () => {
   events.value     = []
   hasMore.value    = false
   nextCursor.value = 0
-  fetchEvents(search.value)
-  fetchGlobalStats()
+
+  const params = buildParams()
+
+  await fetchEvents(params)
+  await fetchGlobalStats()
 }
 
 let searchTimer: ReturnType<typeof setTimeout>
-watch(search, () => { clearTimeout(searchTimer); searchTimer = setTimeout(resetAndFetch, 400) })
+watch(search, resetAndFetch)
 watch(statusFilter, resetAndFetch)
 
 onMounted(fetchEvents)
@@ -101,8 +108,6 @@ onMounted(fetchEvents)
 // ─────────────────────────────────────
 // Statistics
 // ─────────────────────────────────────
-
-
 const statsData = ref({
   total: 0,
   published: 0,
@@ -171,21 +176,29 @@ const doDelete = async () => {
 
 // ─────────────────────────────────────
 // Toggle status
-// ─────────────────────────────────────
-const toggleStatus = async (event: Event) => {
-  const next: EventStatus = event.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+function updateEventStatus(id: number, next: "DRAFT" | "PUBLISHED" | "CANCELLED") {
   try {
-    eventStore.updateStatus(Number(event.id), next)
+    eventStore.updateStatus(id, next)
       .then(async () => {
         await fetchGlobalStats();
-        const idx = events.value.findIndex(e => e.id === event.id)
-        if (idx !== -1) events.value[idx] = { ...events.value[idx], status: next }
-        toast.add({ title: t('events.list.status_updated'), color: 'success'})
+        const idx = events.value.findIndex(e => e.id === id)
+        if (idx !== -1) events.value[idx] = {...events.value[idx], status: next}
+        toast.add({title: t('events.list.status_updated'), color: 'success'})
       })
 
   } catch (e: any) {
-    toast.add({ title: t('common.error'), description: e.data?.message, color: 'error' })
+    toast.add({title: t('common.error'), description: e.data?.message, color: 'error'})
   }
+}
+
+// ─────────────────────────────────────
+const toggleStatus = async (event: Event) => {
+  const next: EventStatus = event.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+  updateEventStatus(Number(event.id), next);
+}
+
+const cancelEvent = async (id: number) => {
+  updateEventStatus(id, 'CANCELLED');
 }
 </script>
 
@@ -267,7 +280,7 @@ const toggleStatus = async (event: Event) => {
           v-for="event in events"
           :key="event.id"
           :ui="{ body: 'p-0' }"
-          class="overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all"
+          class="overflow-hidden hover:ring-1 hover:bg-gray-500/30 hover:ring-gray-500/30 transition-all"
         >
           <div class="flex">
             <!-- Cover -->
@@ -282,7 +295,7 @@ const toggleStatus = async (event: Event) => {
                 <UIcon name="i-lucide-image" class="size-8 text-muted-foreground/30" />
               </div>
               <div class="absolute top-2 left-2">
-                <UBadge :color="statusColor(event.status)" variant="solid" size="xs">
+                <UBadge :color="statusColor(event.status)" variant="solid" size="md">
                   {{ statusLabel(event.status) }}
                 </UBadge>
               </div>
@@ -307,10 +320,10 @@ const toggleStatus = async (event: Event) => {
                   </span>
                 </div>
                 <div v-if="event.categories?.length" class="flex flex-wrap gap-1 mt-0.5">
-                  <UBadge v-for="cat in event.categories.slice(0, 3)" :key="cat.id" variant="subtle" color="neutral" size="xs">
+                  <UBadge v-for="cat in event.categories.slice(0, 3)" :key="cat.id" variant="subtle" color="neutral" size="sm">
                     {{ cat.name }}
                   </UBadge>
-                  <UBadge v-if="event.categories.length > 3" variant="subtle" color="neutral" size="xs">
+                  <UBadge v-if="event.categories.length > 3" variant="subtle" color="neutral" size="md">
                     +{{ event.categories.length - 3 }}
                   </UBadge>
                 </div>
@@ -320,14 +333,30 @@ const toggleStatus = async (event: Event) => {
               <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 flex-shrink-0">
                 <div class="flex items-center gap-1 md:gap-2">
                   <UTooltip :text="t('events.list.edit')">
-                    <UButton icon="i-lucide-pencil" size="md" variant="ghost" color="neutral" :to="`/events/${event.id}/edit`" />
+                    <UButton loading-auto v-if="isDesktop" size="md" variant="solid" :label="t('common.edit')" color="warning" :to="`/events/${event.id}/edit`"></UButton>
+                    <UButton v-else loading-auto icon="i-lucide-pencil" size="md" variant="ghost" color="neutral" :to="`/events/${event.id}/edit`" />
+                  </UTooltip>
+                  <UTooltip v-if="event.status !== 'CANCELLED'" :text="t('common.cancel')">
+                    <UButton v-if="isDesktop"
+                             size="md"
+                             :label="t('common.cancel')"
+                             color="info"
+                             variant="solid"
+                             loading-auto
+                             @click="cancelEvent(Number(event.id))"></UButton>
+                    <UButton v-else
+                             icon="i-lucide:octagon-pause"
+                             size="md"
+                             loading-auto
+                             variant="ghost"
+                             color="neutral" @click="cancelEvent(Number(event.id))" />
                   </UTooltip>
                   <UTooltip :text="t('events.list.delete')">
-                    <UButton icon="i-lucide-trash-2" size="md" variant="ghost" color="error" @click="confirmDelete(Number(event.id))" />
+                    <UButton v-if="isDesktop" loading-auto size="md" color="error" variant="solid" :label="t('common.delete')" @click="confirmDelete(Number(event.id))" />
+                    <UButton v-else loading-auto icon="i-lucide-trash-2" size="md" variant="ghost" color="error" @click="confirmDelete(Number(event.id))" />
                   </UTooltip>
                 </div>
                 <UButton
-                  v-if="event.status !== 'CANCELLED'"
                   size="xs"
                   :color="event.status === 'PUBLISHED' ? 'neutral' : 'primary'"
                   :variant="event.status === 'PUBLISHED' ? 'outline' : 'solid'"
