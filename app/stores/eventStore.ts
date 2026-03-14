@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import type { Event } from "~/types/model";
+import type {Event, GlobalStats} from "~/types/model";
 import {useApi} from "~/composables/useApi";
 import {useAuthStore} from "~/stores/authStore";
 
@@ -15,6 +15,11 @@ interface CreateEventRequest {
   description: string
   startAt: string
   endAt: string | null
+}
+
+interface getGlobalStatsResponse {
+  stats: GlobalStats,
+  status: "success" | "error"
 }
 export const useEventStore = defineStore('event', () => {
 
@@ -49,6 +54,11 @@ export const useEventStore = defineStore('event', () => {
     return await patch(`/organizer/events/${id}/status`, {status})
   }
 
+  const getGlobalStats = async (): Promise<GlobalStats> => {
+    const response = await get<getGlobalStatsResponse>(`/organizer/events/stats`)
+    return response.stats;
+  }
+
   return {
     getEvents,
     createEvent,
@@ -56,5 +66,6 @@ export const useEventStore = defineStore('event', () => {
     updateEvent,
     getEvent,
     updateStatus,
+    getGlobalStats
   }
 });

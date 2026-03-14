@@ -13,6 +13,9 @@ export  interface Event {
   categories: Category[],
   medias?: Media[],
   createdAt?: Date
+  deletedAt?: Date
+  deletedBy?: number
+  isDeleted?: boolean
 }
 
 export interface Address {
@@ -40,6 +43,7 @@ export interface Category {
 export interface Media {
   id: number,
   url: string,
+  thumbnailUrl: string,
   mimeType: string,
   originalName: string,
   width: number,
@@ -47,4 +51,11 @@ export interface Media {
   createdAt: Date,
   isCover?: boolean,
   caption?: string
+}
+
+export interface GlobalStats {
+  total: number,
+  cancelled: number,
+  drafts: number,
+  published: number
 }

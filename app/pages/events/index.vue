@@ -89,6 +89,7 @@ const resetAndFetch = () => {
   hasMore.value    = false
   nextCursor.value = 0
   fetchEvents(search.value)
+  fetchGlobalStats()
 }
 
 let searchTimer: ReturnType<typeof setTimeout>
@@ -100,8 +101,19 @@ onMounted(fetchEvents)
 // ─────────────────────────────────────
 // Statistics
 // ─────────────────────────────────────
-const statsData = ref({ total: 0, published: 0, drafts: 0, cancelled: 0 })
-onMounted(async () => { try { statsData.value = await eventStore.getStats() } catch {} })
+
+
+const statsData = ref({
+  total: 0,
+  published: 0,
+  drafts: 0,
+  cancelled: 0 })
+
+const fetchGlobalStats = async () => {
+  statsData.value = await eventStore.getGlobalStats()
+}
+
+onMounted(async () => { try { await fetchGlobalStats() } catch {} })
 
 const statCards = computed(() => [
   { label: t('events.stats.total'),     value: statsData.value.total,     icon: 'i-lucide-calendar-days', color: 'text-primary',     bg: 'bg-primary-50 dark:bg-primary-900/20' },
@@ -125,7 +137,7 @@ const statusColor = (s: EventStatus): 'success' | 'warning' | 'error' | 'neutral
 const statusLabel = (s: EventStatus) => t(`events.status.${s.toLowerCase()}`)
 const formatDate  = (d: Date) =>
   new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(d))
-const getCover = (event: Event) => event.medias?.find(m => m.isCover)?.url ?? null
+const getCover = (event: Event) => event.medias?.find(m => m.isCover)?.thumbnailUrl ?? null
 
 // ─────────────────────────────────────
 // Delete
@@ -140,11 +152,16 @@ const doDelete = async () => {
   if (!deletingId.value) return
   deleting.value = true
   try {
-    await eventStore.deleteEvent(deletingId.value)
-    events.value = events.value.filter(e => e.id !== deletingId.value)
-    //total.value--
-    deleteModal.value = false
-    toast.add({ title: t('events.list.deleted'), color: 'success' })
+    eventStore.deleteEvent(deletingId.value)
+      .then(async () => {
+        toast.add({ title: t('events.list.deleted'), color: 'success' })
+        events.value = events.value.filter(e => e.id !== deletingId.value)
+        //total.value--
+        deleteModal.value = false
+        await fetchGlobalStats();
+      })
+
+
   } catch (e: any) {
     toast.add({ title: t('common.error'), description: e.data?.message, color: 'error' })
   } finally {
@@ -158,10 +175,14 @@ const doDelete = async () => {
 const toggleStatus = async (event: Event) => {
   const next: EventStatus = event.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
   try {
-    await eventStore.updateStatus(Number(event.id), next)
-    const idx = events.value.findIndex(e => e.id === event.id)
-    if (idx !== -1) events.value[idx] = { ...events.value[idx], status: next }
-    toast.add({ title: t('events.list.status_updated'), color: 'success' })
+    eventStore.updateStatus(Number(event.id), next)
+      .then(async () => {
+        await fetchGlobalStats();
+        const idx = events.value.findIndex(e => e.id === event.id)
+        if (idx !== -1) events.value[idx] = { ...events.value[idx], status: next }
+        toast.add({ title: t('events.list.status_updated'), color: 'success'})
+      })
+
   } catch (e: any) {
     toast.add({ title: t('common.error'), description: e.data?.message, color: 'error' })
   }
@@ -170,12 +191,6 @@ const toggleStatus = async (event: Event) => {
 
 <template>
   <div class="flex flex-col gap-8">
-
-    <!-- ── Page title ── -->
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ t('events.page_title') }}</h1>
-<!--      <p class="text-sm text-muted mt-1">{{ t('events.page_subtitle') }}</p>-->
-    </div>
 
     <!-- ── Stats ── -->
     <section class="flex flex-col gap-3">

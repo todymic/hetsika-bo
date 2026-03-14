@@ -6,12 +6,13 @@
     "save":   "Enregistrer",
     "add":    "Ajouter",
     "cancel": "Annuler",
-    "error":  "Erreur"
+    "error":  "Erreur",
+    "delete": "Supprimer"
   },
   "events": {
-    "page_title": "Liste des évenements",
     "sections": {
-      "stats": "Statistiques"
+      "stats": "Statistiques",
+      "listing": "Liste des évenements"
     },
 
     "header": {
