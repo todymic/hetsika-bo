@@ -10,14 +10,15 @@ const open = ref(false)
 const links = [
   [
     {
-  label: 'Home',
+  label: t('sidebar.home', 'Home'),
   icon: 'i-lucide-house',
   to: '/',
   onSelect: () => {
     open.value = false
   }
-}, {
-    label: t('event'),
+},
+    {
+    label: t('sidebar.events', 'Events'),
     icon: 'i-material-symbols-event-seat-outline',
     to: '/events',
   },

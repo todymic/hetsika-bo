@@ -10,6 +10,10 @@
     "delete": "Supprimer",
     "edit": "Modifier"
   },
+  "sidebar": {
+    "home": "Acceuil",
+    "events": "Evènements"
+  },
   "events": {
     "sections": {
       "stats": "Statistiques",
