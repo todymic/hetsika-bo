@@ -245,7 +245,7 @@ const cancelEvent = async (id: number) => {
             class="w-40"
           />
         </div>
-        <UButton icon="i-lucide-plus" :label="t('events.list.add')" to="/events/new" />
+        <UButton icon="i-lucide-plus" :label="t('events.list.add')" to="/events/create" />
       </div>
 
       <!-- Skeletons -->
@@ -270,7 +270,7 @@ const cancelEvent = async (id: number) => {
         :description="search ? t('events.list.no_results_hint') : t('events.list.empty_hint')"
       >
         <template v-if="!search" #actions>
-          <UButton icon="i-lucide-plus" :label="t('events.list.add')" to="/events/new" />
+          <UButton icon="i-lucide-plus" :label="t('events.list.add')" to="/events/create" />
         </template>
       </UEmpty>
 

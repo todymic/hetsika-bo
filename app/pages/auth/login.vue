@@ -5,7 +5,7 @@ import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 definePageMeta({
   layout: 'auth',
   seo: {
-    title: 'Loginbgertert rgdfg'
+    title: 'Sign in'
   }
 })
 

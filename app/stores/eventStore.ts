@@ -10,11 +10,9 @@ interface getEventsResponse {
   status: string
 }
 
-interface CreateEventRequest {
-  title: string
-  description: string
-  startAt: string
-  endAt: string | null
+interface CreateEventResponse{
+  event: Event
+  status: 'success' | 'error'
 }
 
 interface getGlobalStatsResponse {
@@ -26,6 +24,7 @@ interface FilterParam {
   term?: string
   status?: string
 }
+
 export const useEventStore = defineStore('event', () => {
 
   const { get, post, put, del, patch } = useApi()
@@ -44,9 +43,8 @@ export const useEventStore = defineStore('event', () => {
     return await get<getEventsResponse>(url);
   }
 
-  const createEvent = async (event: CreateEventRequest) => {
-    const response = await post(`/public/organizer/events`, event)
-    return response as Event;
+  const createEvent = async (form: FormData): Promise<CreateEventResponse> => {
+    return await post<CreateEventResponse>(`/public/organizer/events`, form);
   }
 
   const updateEvent = async (event: Event) => {}

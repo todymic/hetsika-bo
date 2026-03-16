@@ -56,7 +56,11 @@
       "all_loaded":  "Tous les événements sont affichés ({count})"
 
     },
-    "create": {
+    "stepper": {
+      "title": {
+        "create": "Création d'un évènement",
+        "edit": "Modification d'un évènement"
+      },
       "steps": {
         "info":         "Informations",
         "localisation": "Localisation",
@@ -70,14 +74,18 @@
         "desc_label":             "Description",
         "desc_placeholder":       "Décrivez votre événement…",
         "categories_label":       "Catégories",
-        "categories_placeholder": "Sélectionnez des catégories"
+        "categories_placeholder": "Sélectionnez des catégories",
+        "upload_label": "Image en couverture",
+        "upload_or": "ou cliquez pour parcourir",
+        "upload_cta": "Glissez vos fichiers ici"
       },
       "localisation": {
         "subtitle": "Adresse complète du lieu",
         "street":   "Rue",
         "city":     "Ville",
         "zip":      "Code postal",
-        "state":    "Région / État"
+        "state":    "Région / État",
+        "subtitle_hint": "Renseignez l'adresse exacte de l'évènement"
       },
       "tickets": {
         "subtitle": "Définissez les types de billets disponibles"
@@ -86,7 +94,9 @@
         "subtitle": "Planifiez le début et la fin",
         "start":    "Date de début",
         "end":      "Date de fin",
-        "error":    "La date de fin doit être après la date de début"
+        "error":    "La date de fin doit être après la date de début",
+        "start_at_required": "La date et l'heure de début sont obligatoires.",
+        "end_before_start": "La date de fin doit être après le début."
       },
       "actions": {
         "submit": "Créer l'événement"
