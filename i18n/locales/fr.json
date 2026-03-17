@@ -77,7 +77,13 @@
         "categories_placeholder": "Sélectionnez des catégories",
         "upload_label": "Image en couverture",
         "upload_or": "ou cliquez pour parcourir",
-        "upload_cta": "Glissez vos fichiers ici"
+        "upload_cta": "Glissez vos fichiers ici",
+        "error": {
+          "title_required": "Le titre est obligatoire",
+          "categories_required": "Sélectionnez au moins une catégorie",
+          "upload_required": "Veuillez ajouter au moins un fichier de couverture"
+        }
+
       },
       "localisation": {
         "subtitle": "Adresse complète du lieu",

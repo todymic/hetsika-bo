@@ -31,8 +31,6 @@ const hasAddress = computed(() => !!store.address.street || !!store.address.city
 const form = useTemplateRef('addressForm')
 
 async function validate(): Promise<boolean> {
-
-  console.log("fsdfsdf")
   try {
     const response = await (form.value as any)?.validate()
     console.log(response)

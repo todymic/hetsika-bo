@@ -9,7 +9,7 @@ const toast   = useToast()
 const {createEvent} = useEventStore()
 
 const steps = ref<StepperItem[]>([
-  { title: t('events.stepper.steps.info'),         icon: 'i-lucide-badge-info',    slot: 'info'         as const },
+  { title: t('events.stepper.steps.info'),         icon: 'i-lucide-contact',    slot: 'info'         as const },
   { title: t('events.stepper.steps.localisation'),  icon: 'i-lucide-map-pin',       slot: 'localisation' as const },
   { title: t('events.stepper.steps.dates'),         icon: 'i-lucide-calendar-days', slot: 'date'         as const },
 ])

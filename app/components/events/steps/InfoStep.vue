@@ -12,9 +12,9 @@ const store             = useEventFormStore()
 const TITLE_MAX = 200
 
 const schema = z.object({
-  title:             z.string().min(1, { message: t('events.stepper.info.title_error_empty') }),
-  selectedCategories: z.array(z.number()).min(1, { message: t('events.stepper.info.categories_error_empty') }),
-  files:              z.array(z.instanceof(File)).min(1, { message: t('events.stepper.info.upload_error_empty') }),
+  title:             z.string().min(1, { message: t('events.stepper.info.error.title_required') }),
+  selectedCategories: z.array(z.number()).min(1, { message: t('events.stepper.info.error.categories_required') }),
+  files:              z.array(z.instanceof(File)).min(1, { message: t('events.stepper.info.error.upload_required') }),
 })
 
 const categoryOptions = ref<SelectItem[]>([])
@@ -121,7 +121,7 @@ async function validate(): Promise<boolean> {
   }
 
   if (store.info.files.length === 0) {
-    fileError.value = t('events.stepper.info.upload_required', 'Veuillez ajouter au moins un fichier.')
+    fileError.value = t('events.stepper.info.error.upload_required')
     console.log(fileError.value)
     return false
   }
@@ -165,6 +165,7 @@ defineExpose({ validate })
           :label="t('events.stepper.info.title_label')"
           name="title"
           class="sm:col-span-3"
+          required
         >
           <template #hint>
             <span :class="titleNearLimit ? 'text-warning' : 'text-muted'" class="text-xs tabular-nums">
@@ -186,6 +187,7 @@ defineExpose({ validate })
           :label="t('events.stepper.info.categories_label')"
           name="selectedCategories"
           class="sm:col-span-2"
+          required
         >
           <template #hint>
             <span v-if="store.info.selectedCategories.length" class="text-xs text-muted">
@@ -232,6 +234,7 @@ defineExpose({ validate })
       <UFormField
         :label="t('events.stepper.info.upload_label')"
         name="files"
+        required
       >
         <template #hint>
           <span class="text-xs text-muted">

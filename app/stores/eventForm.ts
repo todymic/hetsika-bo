@@ -8,7 +8,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
   const info = ref({
     title:              '',
     description:        '',
-    selectedCategories: [] as string[],
+    selectedCategories: [] as number[],
     files:              [] as File[],
   })
 
