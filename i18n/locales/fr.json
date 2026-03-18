@@ -91,7 +91,12 @@
         "city":     "Ville",
         "zip":      "Code postal",
         "state":    "Région / État",
-        "subtitle_hint": "Renseignez l'adresse exacte de l'évènement"
+        "subtitle_hint": "Renseignez l'adresse exacte de l'évènement",
+        "country_label": "Pays" ,
+        "country_placeholder": "Sélectionnez un pays",
+        "street_label": "Adresse",
+        "street_placeholder": "Renseignez la rue",
+        "city_placeholder": "Entrez la ville ou la commune"
       },
       "tickets": {
         "subtitle": "Définissez les types de billets disponibles"

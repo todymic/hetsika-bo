@@ -44,7 +44,7 @@ export const useEventStore = defineStore('event', () => {
   }
 
   const createEvent = async (form: FormData): Promise<CreateEventResponse> => {
-    return await post<CreateEventResponse>(`/public/organizer/events`, form);
+    return await post<CreateEventResponse>(`/organizer/events`, form);
   }
 
   const updateEvent = async (event: Event) => {}

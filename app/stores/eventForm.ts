@@ -2,6 +2,13 @@ import { defineStore } from 'pinia'
 import type { DateValue } from '@internationalized/date'
 import { getLocalTimeZone } from '@internationalized/date'
 
+interface UploadedFile {
+  id:      string
+  file:    File
+  preview: string | null
+  error:   string | null
+}
+
 export const useEventFormStore = defineStore('eventForm', () => {
 
   // ── Info step ────────────────────────────────────────────
@@ -10,6 +17,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
     description:        '',
     selectedCategories: [] as number[],
     files:              [] as File[],
+    uploadedFiles:      [] as UploadedFile[],
   })
 
   // ── Localisation step ─────────────────────────────────────
@@ -62,9 +70,12 @@ export const useEventFormStore = defineStore('eventForm', () => {
   }
 
   function reset() {
-    info.value      = { title: '', description: '', selectedCategories: [], files: [] }
-    address.value   = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '' }
-    dates.value     = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
+    info.value.uploadedFiles.forEach(f => {
+      if (f.preview) URL.revokeObjectURL(f.preview)
+    })
+    info.value    = { title: '', description: '', selectedCategories: [], files: [], uploadedFiles: [] }
+    address.value = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '' }
+    dates.value   = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
   }
 
   return { info, address, dates, buildPayload, reset }

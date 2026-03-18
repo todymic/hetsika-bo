@@ -1,24 +1,61 @@
 <script setup lang="ts">
 import type { StepperItem } from '#ui/components/Stepper.vue'
-import {useEventStore} from "~/stores/eventStore";
+import { useEventStore } from "~/stores/eventStore"
 
-const { t }   = useI18n()
-const store   = useEventFormStore()
-const router  = useRouter()
-const toast   = useToast()
-const {createEvent} = useEventStore()
+const { t }  = useI18n()
+const store  = useEventFormStore()
+const router = useRouter()
+const toast  = useToast()
+const { createEvent } = useEventStore()
 
 const steps = ref<StepperItem[]>([
-  { title: t('events.stepper.steps.info'),         icon: 'i-lucide-contact',    slot: 'info'         as const },
-  { title: t('events.stepper.steps.localisation'),  icon: 'i-lucide-map-pin',       slot: 'localisation' as const },
-  { title: t('events.stepper.steps.dates'),         icon: 'i-lucide-calendar-days', slot: 'date'         as const },
+  { title: t('events.stepper.steps.info'),        icon: 'i-lucide-contact',       slot: 'info'         as const },
+  { title: t('events.stepper.steps.localisation'), icon: 'i-lucide-map-pin',       slot: 'localisation' as const },
+  { title: t('events.stepper.steps.dates'),        icon: 'i-lucide-calendar-days', slot: 'date'         as const },
 ])
 
-const stepper: any    = useTemplateRef('stepper')
-const loading     = ref(false)
-const hasPrev     = computed<boolean>(() => stepper.value?.hasPrev ?? false)
-const hasNext     = computed<boolean>(() => stepper.value?.hasNext ?? false)
-const isLastStep  = computed<boolean>(() => !hasNext.value)
+const stepper  = useTemplateRef('stepper')
+const loading  = ref(false)
+
+// ── Manual index tracking ──────────────────────────────────
+const stepIndex  = ref(0)
+const hasPrev    = computed<boolean>(() => stepIndex.value > 0)
+const hasNext    = computed<boolean>(() => stepIndex.value < steps.value.length - 1)
+const isLastStep = computed<boolean>(() => !hasNext.value)
+
+// ── Step refs ──────────────────────────────────────────────
+const infoStep         = useTemplateRef('infoStep')
+const localisationStep = useTemplateRef('localisationStep')
+const dateStep         = useTemplateRef('dateStep')
+
+const stepRefs = computed(() => [
+  infoStep.value,
+  localisationStep.value,
+  dateStep.value,
+])
+
+// ── Navigation ─────────────────────────────────────────────
+async function handleNext() {
+
+  console.log(stepIndex.value)
+  const current = stepRefs.value[stepIndex.value]
+  const valid   = await current?.validate()
+  if (!valid) return
+
+  if (isLastStep.value) {
+    await submit()
+  } else {
+    stepper.value?.next()
+    stepIndex.value++
+  }
+}
+
+function handlePrev() {
+  stepper.value?.prev()
+  stepIndex.value--
+
+  console.log(stepIndex.value)
+}
 
 // ── Submit ─────────────────────────────────────────────────
 async function submit() {
@@ -32,7 +69,7 @@ async function submit() {
 
     const response = await createEvent(form)
 
-    if(response.status === 'success') {
+    if (response.status === 'success') {
       toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
       store.reset()
       router.push('/events')
@@ -46,30 +83,6 @@ async function submit() {
   } finally {
     loading.value = false
   }
-}
-
-
-const infoStep         = useTemplateRef('infoStep')
-const localisationStep = useTemplateRef('localisationStep')
-const dateStep         = useTemplateRef('dateStep')
-
-const stepRefs = computed(() => [
-  infoStep.value,
-  localisationStep.value,
-  dateStep.value,
-])
-
-const currentIndex = computed<number>(() => stepper.value?.value ?? 0)
-
-async function handleNext() {
-  // Validate current step
-  const current = stepRefs.value[currentIndex.value]
-  const valid   = await current?.validate()
-  console.log(stepper.value?.value, valid)
-  if (!valid) return
-  console.log(current, valid)
-  if (isLastStep.value) submit()
-  else stepper.value?.next()
 }
 </script>
 
@@ -110,7 +123,7 @@ async function handleNext() {
             variant="outline"
             leading-icon="i-lucide-arrow-left"
             :disabled="!hasPrev"
-            @click="stepper?.prev()"
+            @click="handlePrev"
           >
             {{ t('events.stepper.nav.prev', 'Previous') }}
           </UButton>

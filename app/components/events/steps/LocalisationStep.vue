@@ -33,12 +33,9 @@ const form = useTemplateRef('addressForm')
 async function validate(): Promise<boolean> {
   try {
     const response = await (form.value as any)?.validate()
-    console.log(response)
   }
   catch (e: any){
-    console.log(e.errors)
   }
-
 
   return schema.safeParse(store.address).success
 }
@@ -71,12 +68,12 @@ defineExpose({ validate })
     <UForm ref="addressForm" :schema="schema" :state="store.address" class="space-y-5">
 
       <!-- Country -->
-      <UFormField :label="t('events.stepper.localisation.country_label', 'Pays')" name="selectedCountry" required>
+      <UFormField :label="t('events.stepper.localisation.country_label')" name="selectedCountry" required>
         <USelectMenu
           v-model="store.address.selectedCountry"
           :items="countries"
           value-key="value"
-          :placeholder="t('events.stepper.localisation.country_placeholder', 'Sélectionnez un pays')"
+          :placeholder="t('events.stepper.localisation.country_placeholder')"
           leading-icon="i-lucide-globe"
           size="lg"
           class="w-full"
@@ -87,7 +84,7 @@ defineExpose({ validate })
       <UFormField :label="t('events.stepper.localisation.street_label', 'Adresse')" name="street" required>
         <UInput
           v-model="store.address.street"
-          :placeholder="t('events.stepper.localisation.street_placeholder', '12 rue des Fleurs')"
+          :placeholder="t('events.stepper.localisation.street_placeholder')"
           leading-icon="i-lucide-map-pin"
           size="lg"
           class="w-full"

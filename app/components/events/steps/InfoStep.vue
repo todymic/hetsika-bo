@@ -46,14 +46,6 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE_MB    = 5
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
-interface UploadedFile {
-  id:      string
-  file:    File
-  preview: string | null
-  error:   string | null
-}
-
-const uploadedFiles = ref<UploadedFile[]>([])
 const isDragging    = ref(false)
 const fileInput     = useTemplateRef('fileInput')
 
@@ -67,22 +59,25 @@ function validateFile(file: File): string | null {
   return null
 }
 
+const uploadedFiles = computed(() => store.info.uploadedFiles)
+
 function addFiles(files: FileList | File[]) {
   for (const file of Array.from(files)) {
     const error   = validateFile(file)
     const preview = isImage(file) && !error ? URL.createObjectURL(file) : null
-    uploadedFiles.value.push({ id: crypto.randomUUID(), file, preview, error })
-    // Sync valid files to store
-    if (!error) store.info.files.push(file)
+    store.info.uploadedFiles.push({ id: crypto.randomUUID(), file, preview, error })
+    if (!error) {
+      store.info.files.push(file)
+      fileError.value = ''
+    }
   }
 }
 
 function removeFile(id: string) {
-  const f = uploadedFiles.value.find(f => f.id === id)
+  const f = store.info.uploadedFiles.find(f => f.id === id)
   if (f?.preview) URL.revokeObjectURL(f.preview)
-  uploadedFiles.value = uploadedFiles.value.filter(f => f.id !== id)
-  // Sync removal to store
-  store.info.files = uploadedFiles.value
+  store.info.uploadedFiles = store.info.uploadedFiles.filter(f => f.id !== id)
+  store.info.files = store.info.uploadedFiles
     .filter(f => !f.error)
     .map(f => f.file)
 }
@@ -104,7 +99,7 @@ function formatSize(bytes: number) {
 }
 
 onUnmounted(() => {
-  uploadedFiles.value.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview) })
+  //uploadedFiles.value.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview) })
 })
 
 onMounted(async () => {
