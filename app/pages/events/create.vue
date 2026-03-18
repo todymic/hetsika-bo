@@ -37,10 +37,15 @@ const stepRefs = computed(() => [
 // ── Navigation ─────────────────────────────────────────────
 async function handleNext() {
 
-  console.log(stepIndex.value)
+
   const current = stepRefs.value[stepIndex.value]
   const valid   = await current?.validate()
-  if (!valid) return
+
+
+  if (!valid) {
+    console.log('form not valid')
+    return
+  }
 
   if (isLastStep.value) {
     await submit()
@@ -72,12 +77,12 @@ async function submit() {
     if (response.status === 'success') {
       toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
       store.reset()
-      router.push('/events')
+      await router.push('/events')
     }
   } catch (err: any) {
     toast.add({
       title:       t('events.create.error', 'Erreur'),
-      description: err?.data?.message ?? 'Une erreur est survenue',
+      description: err ?? 'Une erreur est survenue',
       color:       'error',
     })
   } finally {

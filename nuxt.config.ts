@@ -1,6 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 
+import {fileURLToPath} from "node:url";
+import {resolve} from "path";
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
 export default defineNuxtConfig({
  runtimeConfig: {
    public: {
@@ -40,8 +45,8 @@ export default defineNuxtConfig({
   },
   devServer: {
     https: {
-      key: './certs/localhost-key.pem',
-      cert: './certs/localhost.pem'
+      key: resolve(__dirname, 'certs/localhost.key'),
+      cert: resolve(__dirname, 'certs/localhost.crt')
     }
   }
 })
