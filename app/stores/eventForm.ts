@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { DateValue } from '@internationalized/date'
 import { getLocalTimeZone, CalendarDate } from '@internationalized/date'
-import type {Address, Event} from '~/types/model'
+import type {Address, Event, Media} from '~/types/model'
 import {dateToCalendar, dateToTime, toISO} from "~/utils/dateHelper";
 
 export interface UploadedFile {
@@ -20,9 +20,11 @@ export const useEventFormStore = defineStore('eventForm', () => {
   const info = ref({
     title:              '',
     description:        '',
-    selectedCategories: [] as string[],
+    selectedCategories: [] as number[],
     files:              [] as File[],
     uploadedFiles:      [] as UploadedFile[],
+    existingFiles:      [] as Media[],
+    removedFileIds:     [] as number[]
   })
 
   // ── Localisation step ─────────────────────────────────────
@@ -71,6 +73,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
         zipcode:     address.value.zipCode,
         countryCode: address.value.selectedCountry,
       },
+      removedFileIds: info.value.removedFileIds,
     }
   }
 
@@ -84,9 +87,11 @@ export const useEventFormStore = defineStore('eventForm', () => {
     info.value = {
       title:              event.title as string,
       description:        event.description ?? '',
-      selectedCategories: event.categories.map(String),
+      selectedCategories: event.categories.map(c => c.id),
       files:              [],
       uploadedFiles:      [],
+      existingFiles:      event.medias ?? [],
+      removedFileIds:     [],
     }
 
     address.value = {
@@ -106,14 +111,26 @@ export const useEventFormStore = defineStore('eventForm', () => {
       endTime:    hasEnd ? dateToTime(event.endAt!)     : '',
       hasEndDate: hasEnd,
     }
+
+
   }
 
   // ── Reset ─────────────────────────────────────────────────
   function reset() {
+
+    console.log("resetting form")
     info.value.uploadedFiles.forEach(f => {
       if (f.preview) URL.revokeObjectURL(f.preview)
     })
-    info.value    = { title: '', description: '', selectedCategories: [], files: [], uploadedFiles: [] }
+    info.value    = {
+      title: '',
+      description: '',
+      selectedCategories: [],
+      files: [],
+      uploadedFiles: [],
+      existingFiles: [],
+      removedFileIds: [],
+    }
     address.value = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '' }
     dates.value   = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
   }

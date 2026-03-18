@@ -61,8 +61,7 @@ export const useEventStore = defineStore('event', () => {
   }
 
   const getEvent = async (id: number): Promise<Event> => {
-    const response = await get<EventResponse>(`/public/organizer/${auth.user?.id}/events/${id}`)
-
+    const response = await get<EventResponse>(`/public/organizers/${auth.user?.id}/events/${id}`)
     if(response.status === 'error') {
       throw new Error('Failed to fetch event')
     }

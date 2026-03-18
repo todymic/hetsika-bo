@@ -8,10 +8,12 @@ export function toISO(date: DateValue, time: string): string {
   return d.toISOString()
 }
 
-export function dateToCalendar(d: Date): CalendarDate {
+export function dateToCalendar(date: Date | string): CalendarDate {
+  const d = new Date(date)
   return new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate())
 }
 
-export function dateToTime(d: Date): string {
+export function dateToTime(date: Date | string): string {
+  const d = new Date(date)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }

@@ -67,19 +67,6 @@ defineExpose({ validate })
     <!-- ── Body ───────────────────────────────────────────── -->
     <UForm ref="addressForm" :schema="schema" :state="store.address" class="space-y-5">
 
-      <!-- Country -->
-      <UFormField :label="t('events.stepper.localisation.country_label')" name="selectedCountry" required>
-        <USelectMenu
-          v-model="store.address.selectedCountry"
-          :items="countries"
-          value-key="value"
-          :placeholder="t('events.stepper.localisation.country_placeholder')"
-          leading-icon="i-lucide-globe"
-          size="lg"
-          class="w-full"
-        />
-      </UFormField>
-
       <!-- Street -->
       <UFormField :label="t('events.stepper.localisation.street_label', 'Adresse')" name="street" required>
         <UInput
@@ -114,6 +101,18 @@ defineExpose({ validate })
           <UInput v-model="store.address.city" :placeholder="t('events.stepper.localisation.city_placeholder', 'Luxembourg')" leading-icon="i-lucide-landmark" size="lg" class="w-full" />
         </UFormField>
       </div>
+      <!-- Country -->
+      <UFormField :label="t('events.stepper.localisation.country_label')" name="selectedCountry" required>
+        <USelectMenu
+          v-model="store.address.selectedCountry"
+          :items="countries"
+          value-key="value"
+          :placeholder="t('events.stepper.localisation.country_placeholder')"
+          leading-icon="i-lucide-globe"
+          size="lg"
+          class="w-full"
+        />
+      </UFormField>
 
       <!-- Address preview -->
       <Transition

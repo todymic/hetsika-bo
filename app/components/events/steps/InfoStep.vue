@@ -4,6 +4,7 @@ import type { EditorToolbarItem } from '#ui/components/EditorToolbar.vue'
 import type { SelectItem } from '#ui/components/Select.vue'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
+import type {Media} from "~/types/model";
 
 const { t }             = useI18n()
 const { getCategories } = useCategoryStore()
@@ -18,10 +19,6 @@ const schema = z.object({
 })
 
 const categoryOptions = ref<SelectItem[]>([])
-
-const isEditMode        = computed(() => store.isEditMode)
-const hasExistingFiles  = computed(() => isEditMode.value && store.info.uploadedFiles.length === 0)
-
 const titleLength    = computed(() => store.info.title.length)
 const titleNearLimit = computed(() => titleLength.value > TITLE_MAX * 0.8)
 
@@ -63,6 +60,16 @@ function validateFile(file: File): string | null {
 }
 
 const uploadedFiles = computed(() => store.info.uploadedFiles)
+const existingFiles = computed(() => store.info.existingFiles)
+
+function removeExistingFile(media: Media) {
+  store.info.removedFileIds.push(media.id)
+  store.info.existingFiles = store.info.existingFiles.filter(f => f.id !== media.id)
+}
+
+function isImageMime(mimeType: string) {
+  return mimeType.startsWith('image/')
+}
 
 function addFiles(files: FileList | File[]) {
   for (const file of Array.from(files)) {
@@ -101,10 +108,6 @@ function formatSize(bytes: number) {
     : `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
 }
 
-onUnmounted(() => {
-  //uploadedFiles.value.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview) })
-})
-
 onMounted(async () => {
   const categories  = await getCategories()
   categoryOptions.value = categories.map(c => ({ label: c.name, value: c.id }))
@@ -114,16 +117,20 @@ const form = useTemplateRef('form')
 const fileError = ref<string>('')
 async function validate(): Promise<boolean> {
   try { await (form.value as any)?.validate() } catch {}
-
-  if (!store.isEditMode && store.info.files.length === 0) {
+  const hasFiles = store.info.files.length > 0 || store.info.existingFiles.length > 0
+  if (!store.isEditMode && !hasFiles) {
     fileError.value = t('events.stepper.info.upload_required', 'Veuillez ajouter au moins un fichier.')
+    return false
+  }
+  if (store.isEditMode && !hasFiles) {
+    fileError.value = t('events.stepper.info.upload_required_edit', 'Veuillez conserver ou ajouter au moins un fichier.')
     return false
   }
   fileError.value = ''
 
   return schema.safeParse({
     ...store.info,
-    files: store.isEditMode ? [new File([], 'placeholder')] : store.info.files,
+    files: hasFiles ? [new File([], 'placeholder')] : store.info.files,
   }).success
 }
 
@@ -239,6 +246,78 @@ defineExpose({ validate })
           </span>
         </template>
 
+        <!-- Existing files (edit mode) -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-1"
+          enter-to-class="opacity-100 translate-y-0"
+        >
+          <div v-if="existingFiles.length" class="space-y-2">
+            <p class="flex items-center gap-1.5 text-xs font-medium text-muted">
+              <UIcon name="i-lucide-paperclip" class="size-3.5" />
+              {{ t('events.stepper.info.existing_files', 'Fichiers existants') }}
+            </p>
+
+            <ul class="space-y-2">
+              <li
+                v-for="media in existingFiles"
+                :key="media.id"
+                class="flex items-center gap-3 rounded-lg border border-default bg-muted/20 px-3 py-2"
+              >
+                <!-- Thumbnail -->
+                <div class="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-default bg-muted/40">
+                  <img
+                    v-if="isImageMime(media.mimeType)"
+                    :src="media.thumbnailUrl || media.url"
+                    :alt="media.originalName"
+                    class="h-full w-full object-cover"
+                  />
+                  <div v-else class="flex h-full w-full items-center justify-center">
+                    <UIcon name="i-lucide-file-text" class="size-4 text-muted" />
+                  </div>
+                </div>
+
+                <!-- Info -->
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-highlighted">
+                    {{ media.originalName }}
+                  </p>
+                  <div class="flex items-center gap-2">
+            <span class="text-xs text-muted uppercase">
+              {{ media.mimeType.split('/')[1] }}
+            </span>
+                    <span v-if="media.isCover" class="inline-flex items-center gap-1 text-xs text-primary">
+              <UIcon name="i-lucide-star" class="size-3" />
+              {{ t('events.stepper.info.cover', 'Couverture') }}
+            </span>
+                  </div>
+                </div>
+
+                <!-- Preview link -->
+                <UButton
+                  variant="ghost"
+                  size="xs"
+                  icon="i-lucide-external-link"
+                  color="neutral"
+                  :to="media.url"
+                  target="_blank"
+                />
+
+                <!-- Remove -->
+                <UButton
+                  variant="ghost"
+                  size="xs"
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  @click="removeExistingFile(media)"
+                />
+              </li>
+            </ul>
+
+            <UDivider class="my-2" />
+          </div>
+        </Transition>
+
         <!-- Drop zone -->
         <div
           class="relative flex flex-col items-center justify-center gap-3 rounded-lg border-2
@@ -272,18 +351,6 @@ defineExpose({ validate })
               {{ t('events.stepper.info.upload_or') }}
             </p>
           </div>
-        </div>
-
-        <!-- Edit mode: existing files notice -->
-        <div
-          v-if="hasExistingFiles"
-          class="mt-2 flex items-center gap-2 rounded-lg border border-warning/30
-         bg-warning/5 px-3 py-2"
-        >
-          <UIcon name="i-lucide-info" class="size-4 shrink-0 text-warning" />
-          <p class="text-xs text-warning">
-            {{ t('events.stepper.info.upload_edit_hint', 'Laissez vide pour conserver les fichiers existants.') }}
-          </p>
         </div>
 
         <!-- File list -->
