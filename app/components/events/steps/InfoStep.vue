@@ -19,6 +19,9 @@ const schema = z.object({
 
 const categoryOptions = ref<SelectItem[]>([])
 
+const isEditMode        = computed(() => store.isEditMode)
+const hasExistingFiles  = computed(() => isEditMode.value && store.info.uploadedFiles.length === 0)
+
 const titleLength    = computed(() => store.info.title.length)
 const titleNearLimit = computed(() => titleLength.value > TITLE_MAX * 0.8)
 
@@ -110,19 +113,18 @@ onMounted(async () => {
 const form = useTemplateRef('form')
 const fileError = ref<string>('')
 async function validate(): Promise<boolean> {
-  try { await (form.value as any)?.validate() }
-  catch(e: any) {
-    console.log(e.errors)
-  }
+  try { await (form.value as any)?.validate() } catch {}
 
-  if (store.info.files.length === 0) {
-    fileError.value = t('events.stepper.info.error.upload_required')
-    console.log(fileError.value)
+  if (!store.isEditMode && store.info.files.length === 0) {
+    fileError.value = t('events.stepper.info.upload_required', 'Veuillez ajouter au moins un fichier.')
     return false
   }
   fileError.value = ''
 
-  return schema.safeParse(store.info).success
+  return schema.safeParse({
+    ...store.info,
+    files: store.isEditMode ? [new File([], 'placeholder')] : store.info.files,
+  }).success
 }
 
 defineExpose({ validate })
@@ -270,6 +272,18 @@ defineExpose({ validate })
               {{ t('events.stepper.info.upload_or') }}
             </p>
           </div>
+        </div>
+
+        <!-- Edit mode: existing files notice -->
+        <div
+          v-if="hasExistingFiles"
+          class="mt-2 flex items-center gap-2 rounded-lg border border-warning/30
+         bg-warning/5 px-3 py-2"
+        >
+          <UIcon name="i-lucide-info" class="size-4 shrink-0 text-warning" />
+          <p class="text-xs text-warning">
+            {{ t('events.stepper.info.upload_edit_hint', 'Laissez vide pour conserver les fichiers existants.') }}
+          </p>
         </div>
 
         <!-- File list -->

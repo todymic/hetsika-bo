@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import type { DateValue } from '@internationalized/date'
-import { getLocalTimeZone } from '@internationalized/date'
+import { getLocalTimeZone, CalendarDate } from '@internationalized/date'
+import type {Address, Event} from '~/types/model'
+import {dateToCalendar, dateToTime, toISO} from "~/utils/dateHelper";
 
-interface UploadedFile {
+export interface UploadedFile {
   id:      string
   file:    File
   preview: string | null
@@ -11,11 +13,14 @@ interface UploadedFile {
 
 export const useEventFormStore = defineStore('eventForm', () => {
 
-  // ── Info step ────────────────────────────────────────────
+  const isEditMode = ref(false)
+  const editingId  = ref<number | null>(null)
+
+  // ── Info step ─────────────────────────────────────────────
   const info = ref({
     title:              '',
     description:        '',
-    selectedCategories: [] as number[],
+    selectedCategories: [] as string[],
     files:              [] as File[],
     uploadedFiles:      [] as UploadedFile[],
   })
@@ -30,25 +35,25 @@ export const useEventFormStore = defineStore('eventForm', () => {
   })
 
   // ── Date step ─────────────────────────────────────────────
-  const dates = ref({
-    startDate: undefined as DateValue | undefined,
-    startTime: '',
-    endDate:   undefined as DateValue | undefined,
-    endTime:   '',
+  const dates = ref<{
+    startDate:  DateValue | undefined
+    startTime:  string
+    endDate:    DateValue | undefined
+    endTime:    string
+    hasEndDate: boolean
+  }>({
+    startDate:  undefined,
+    startTime:  '',
+    endDate:    undefined,
+    endTime:    '',
     hasEndDate: false,
   })
 
-  // ── Serialize → payload API ────────────────────────────────
-  function toISO(date: DateValue, time: string): string {
-    const [h, m] = time.split(':').map(Number)
-    const d = date.toDate(getLocalTimeZone())
-    d.setHours(h ?? 0, m ?? 0, 0, 0)
-    return d.toISOString()
-  }
 
+
+  // ── Build API payload ─────────────────────────────────────
   function buildPayload() {
     const { startDate, startTime, endDate, endTime, hasEndDate } = dates.value
-
     const start = startDate as DateValue | undefined
     const end   = endDate   as DateValue | undefined
 
@@ -69,6 +74,41 @@ export const useEventFormStore = defineStore('eventForm', () => {
     }
   }
 
+  // ── Load event (edit mode) ────────────────────────────────
+  function loadEvent(event: Event) {
+    isEditMode.value = true
+    editingId.value = Number(event.id)
+
+    const eventAddress = event.address as Address
+
+    info.value = {
+      title:              event.title as string,
+      description:        event.description ?? '',
+      selectedCategories: event.categories.map(String),
+      files:              [],
+      uploadedFiles:      [],
+    }
+
+    address.value = {
+      street:          eventAddress.street,
+      complement:      '',
+      city:            eventAddress.city,
+      zipCode:         eventAddress.zipcode,
+      selectedCountry: eventAddress.countryCode,
+    }
+
+    const hasEnd = !!event.endAt
+
+    dates.value = {
+      startDate:  dateToCalendar(event.startAt),
+      startTime:  dateToTime(event.startAt),
+      endDate:    hasEnd ? dateToCalendar(event.endAt!) : undefined,
+      endTime:    hasEnd ? dateToTime(event.endAt!)     : '',
+      hasEndDate: hasEnd,
+    }
+  }
+
+  // ── Reset ─────────────────────────────────────────────────
   function reset() {
     info.value.uploadedFiles.forEach(f => {
       if (f.preview) URL.revokeObjectURL(f.preview)
@@ -78,5 +118,22 @@ export const useEventFormStore = defineStore('eventForm', () => {
     dates.value   = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
   }
 
-  return { info, address, dates, buildPayload, reset }
+  function resetEditMode() {
+    isEditMode.value = false
+    editingId.value  = null
+  }
+
+  return {
+    // State
+    info,
+    address,
+    dates,
+    isEditMode,
+    editingId,
+    // Actions
+    loadEvent,
+    buildPayload,
+    reset,
+    resetEditMode,
+  }
 })

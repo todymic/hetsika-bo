@@ -3,7 +3,7 @@ export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
 
 export  interface Event {
   id?: number|undefined,
-  title?: string,
+  title: string,
   description?: string,
   startAt: Date,
   endAt?: Date | null,
@@ -21,8 +21,8 @@ export  interface Event {
 export interface Address {
   street: string,
   city: string,
-  state: string,
-  zip: string,
+  zipcode: string,
+  countryCode: string,
   placeId?: number | null
 }
 

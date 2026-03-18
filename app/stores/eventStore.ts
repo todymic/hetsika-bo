@@ -15,7 +15,7 @@ interface CreateEventResponse{
   status: 'success' | 'error'
 }
 
-interface getGlobalStatsResponse {
+interface GetGlobalStatsResponse {
   stats: GlobalStats,
   status: "success" | "error"
 }
@@ -23,6 +23,11 @@ interface getGlobalStatsResponse {
 interface FilterParam {
   term?: string
   status?: string
+}
+
+interface EventResponse {
+  event: Event,
+  status: 'success' | 'error'
 }
 
 export const useEventStore = defineStore('event', () => {
@@ -43,18 +48,26 @@ export const useEventStore = defineStore('event', () => {
     return await get<getEventsResponse>(url);
   }
 
-  const createEvent = async (form: FormData): Promise<CreateEventResponse> => {
-    return await post<CreateEventResponse>(`/organizer/events`, form);
+  const createEvent = async (form: FormData): Promise<EventResponse> => {
+    return await post<EventResponse>(`/organizer/events`, form);
   }
 
-  const updateEvent = async (event: Event) => {}
+  const updateEvent = async (id: number, form: FormData): Promise<EventResponse> => {
+    return await put<EventResponse>(`/organizer/events/${id}`, form)
+  }
 
   const deleteEvent = async (id: number) => {
     return await del(`/organizer/events/${id}`)
   }
 
-  const getEvent = async (id: number) => {
-    return await get(`/public/organizer/${auth.user?.id}/events/${id}`)
+  const getEvent = async (id: number): Promise<Event> => {
+    const response = await get<EventResponse>(`/public/organizer/${auth.user?.id}/events/${id}`)
+
+    if(response.status === 'error') {
+      throw new Error('Failed to fetch event')
+    }
+
+    return response.event;
   }
 
   const updateStatus = async (id: number, status: string) => {
@@ -62,7 +75,7 @@ export const useEventStore = defineStore('event', () => {
   }
 
   const getGlobalStats = async (): Promise<GlobalStats> => {
-    const response = await get<getGlobalStatsResponse>(`/organizer/events/stats`)
+    const response = await get<GetGlobalStatsResponse>(`/organizer/events/stats`)
     return response.stats;
   }
 
