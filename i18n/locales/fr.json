@@ -1,136 +1,200 @@
 {
-
   "common": {
-    "next":   "Suivant",
-    "back":   "Retour",
-    "save":   "Enregistrer",
-    "add":    "Ajouter",
+    "next": "Suivant",
+    "back": "Retour",
+    "save": "Enregistrer",
+    "add": "Ajouter",
     "cancel": "Annuler",
-    "error":  "Erreur",
+    "error": "Erreur",
     "delete": "Supprimer",
     "edit": "Modifier"
   },
+
   "sidebar": {
-    "home": "Acceuil",
-    "events": "Evènements"
+    "home": "Accueil",
+    "events": "Évènements"
   },
+
   "events": {
     "sections": {
       "stats": "Statistiques",
-      "listing": "Liste des évenements"
+      "listing": "Liste des événements"
     },
 
     "header": {
       "title": "Gestion des évènements"
     },
+
     "stats": {
-      "total":     "Total",
+      "total": "Total",
       "published": "Publiés",
-      "drafts":     "Brouillons",
+      "drafts": "Brouillons",
       "cancelled": "Annulés"
     },
+
     "status": {
-      "all":       "Tous les statuts",
+      "all": "Tous les statuts",
       "published": "Publié",
-      "draft":     "Brouillon",
+      "draft": "Brouillon",
       "cancelled": "Annulé"
     },
+
     "list": {
       "search": "Rechercher un évènement",
-      "participants":          "0 participant | {count} participant | {count} participants",
-      "deleted":              "Événement supprimé",
-      "status_updated":       "Statut mis à jour",
-      "publish":              "Publier",
-      "unpublish":            "Dépublier",
-      "edit":                 "Modifier",
-      "delete":               "Supprimer",
-      "no_results":           "Aucun résultat",
-      "no_results_hint":      "Essayez un autre terme de recherche",
-      "empty_hint":           "Créez votre premier événement",
+      "participants": "0 participant | {count} participant | {count} participants",
+      "deleted": "Événement supprimé",
+      "status_updated": "Statut mis à jour",
+      "publish": "Publier",
+      "unpublish": "Dépublier",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "no_results": "Aucun résultat",
+      "no_results_hint": "Essayez un autre terme de recherche",
+      "empty_hint": "Créez votre premier événement",
       "delete_confirm_title": "Supprimer l'événement",
-      "delete_confirm_body":  "Cette action est irréversible. L'événement sera définitivement supprimé.",
+      "delete_confirm_body": "Cette action est irréversible. L'événement sera définitivement supprimé.",
       "add": "Nouvel évènement",
       "empty": "Aucun évènement disponible",
       "loading_more": "Chargement des événements...",
-      "see_more":    "Voir d'autres événements",
-      "all_loaded":  "Tous les événements sont affichés ({count})"
-
+      "see_more": "Voir d'autres événements",
+      "all_loaded": "Tous les événements sont affichés ({count})"
     },
+
+    "create": {
+      "success": "Événement créé avec succès !",
+      "error": "Erreur lors de la création"
+    },
+
+    "edit": {
+      "success": "Événement mis à jour avec succès !",
+      "error": "Erreur lors de la mise à jour",
+      "error_description": "Une erreur est survenue lors de la mise à jour."
+    },
+
     "stepper": {
       "title": {
         "create": "Création d'un évènement",
         "edit": "Modification d'un évènement"
       },
+
       "steps": {
-        "info":         "Informations",
+        "info": "Informations",
         "localisation": "Localisation",
-        "tickets":      "Billets",
-        "dates":        "Dates"
+        "tickets": "Billets",
+        "dates": "Dates"
       },
+
+      "nav": {
+        "prev": "Précédent",
+        "next": "Suivant",
+        "submit": "Publier",
+        "update": "Mettre à jour"
+      },
+
       "info": {
-        "subtitle":               "Titre, catégories et description",
-        "title_label":            "Titre de l'événement",
-        "title_placeholder":      "Ex : Festival Jazz au Parc",
-        "desc_label":             "Description",
-        "desc_placeholder":       "Décrivez votre événement…",
-        "categories_label":       "Catégories",
+        "subtitle": "Titre, catégories et description",
+        "subtitle_hint": "Renseignez les informations générales de votre événement.",
+
+        "title_label": "Titre de l'événement",
+        "title_placeholder": "Ex : Festival Jazz au Parc",
+
+        "desc_label": "Description",
+        "desc_placeholder": "Décrivez votre événement…",
+
+        "categories_label": "Catégories",
         "categories_placeholder": "Sélectionnez des catégories",
-        "upload_label": "Image en couverture",
+        "categories_selected": "{count} sélectionnée(s)",
+
+        "upload_label": "Image de couverture",
+        "upload_cta": "Glissez votre fichier ici",
         "upload_or": "ou cliquez pour parcourir",
-        "upload_cta": "Glissez vos fichiers ici",
+
+        "existing_files": "Fichiers existants",
+        "cover": "Couverture",
+
+        "upload_error_type": "Type de fichier non supporté (JPG, PNG, WEBP uniquement)",
+        "upload_error_size": "Taille maximale dépassée ({max} Mo)",
+
         "error": {
           "title_required": "Le titre est obligatoire",
           "categories_required": "Sélectionnez au moins une catégorie",
-          "upload_required": "Veuillez ajouter au moins un fichier de couverture"
+          "upload_required": "Veuillez ajouter une image de couverture",
+          "upload_required_edit": "Veuillez conserver ou ajouter au moins une image de couverture"
         }
-
       },
+
       "localisation": {
         "subtitle": "Adresse complète du lieu",
-        "street":   "Rue",
-        "city":     "Ville",
-        "zip":      "Code postal",
-        "state":    "Région / État",
         "subtitle_hint": "Renseignez l'adresse exacte de l'évènement",
-        "country_label": "Pays" ,
+
+        "country_label": "Pays",
         "country_placeholder": "Sélectionnez un pays",
+
         "street_label": "Adresse",
         "street_placeholder": "Renseignez la rue",
-        "city_placeholder": "Entrez la ville ou la commune"
+
+        "complement_label": "Complément",
+        "complement_hint": "Optionnel",
+        "complement_placeholder": "Bâtiment, étage...",
+
+        "zip_label": "Code postal",
+        "zip_placeholder": "1234",
+
+        "city_label": "Ville",
+        "city_placeholder": "Entrez la ville ou la commune",
+
+        "preview_label": "Adresse complète"
       },
+
       "tickets": {
         "subtitle": "Définissez les types de billets disponibles"
       },
+
       "dates": {
         "subtitle": "Planifiez le début et la fin",
-        "start":    "Date de début",
-        "end":      "Date de fin",
-        "error":    "La date de fin doit être après la date de début",
+        "subtitle_hint": "Définissez quand se déroule votre événement.",
+
+        "start": "Date de début",
+        "end": "Date de fin",
+
+        "start_label": "Début",
+        "end_label": "Fin",
+
+        "pick_date": "Choisir une date",
+        "end_toggle": "Ajouter une date de fin",
+
+        "duration_label": "Durée",
+
+        "error": "La date de fin doit être après la date de début",
         "start_at_required": "La date et l'heure de début sont obligatoires.",
-        "end_before_start": "La date de fin doit être après le début."
+        "end_before_start": "La date de fin doit être après le début.",
+        "end_before_start_error": "La date de fin doit être après le début."
       },
+
       "actions": {
         "submit": "Créer l'événement"
       },
+
       "toast": {
-        "step1":   "Informations enregistrées",
-        "step2":   "Localisation enregistrée",
-        "step3":   "Billets enregistrés",
+        "step1": "Informations enregistrées",
+        "step2": "Localisation enregistrée",
+        "step3": "Billets enregistrés",
         "success": "Événement créé avec succès !"
       }
-    },
-    "tickets": {
-      "add":              "Ajouter un billet",
-      "new":              "Nouveau type de billet",
-      "edit":             "Modifier le billet",
-      "empty":            "Aucun type de billet ajouté",
-      "active":           "Actif",
-      "inactive":         "Inactif",
-      "col_name":         "Nom",
-      "col_price":        "Prix",
-      "col_qty":          "Quantité",
-      "col_status":       "Statut",
-      "name_placeholder": "Ex : VIP, Standard…"
     }
+  },
+
+  "tickets": {
+    "add": "Ajouter un billet",
+    "new": "Nouveau type de billet",
+    "edit": "Modifier le billet",
+    "empty": "Aucun type de billet ajouté",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "col_name": "Nom",
+    "col_price": "Prix",
+    "col_qty": "Quantité",
+    "col_status": "Statut",
+    "name_placeholder": "Ex : VIP, Standard…"
   }
 }

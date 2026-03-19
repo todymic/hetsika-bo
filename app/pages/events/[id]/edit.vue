@@ -9,16 +9,24 @@ const toast                     = useToast()
 const { getEvent, updateEvent } = useEventStore()
 const loading                   = ref(false)
 
-const eventId = computed(() => Number(route.params.id))
+const eventId = Number(route.params.id)
 
-const { pending } = await useAsyncData(
-  `event-edit-${eventId.value}`,
-  async () => {
-    const event = await getEvent(eventId.value)
-    store.loadEvent(event)
-    return event
+const pending = ref(true)
+
+onMounted(async () => {
+  try {
+    const data = await getEvent(eventId)
+    store.loadEvent(data)
+  } finally {
+    pending.value = false
   }
-)
+})
+
+onUnmounted(() => {
+  store.reset()
+  store.resetEditMode()
+})
+
 
 async function submit() {
   loading.value = true
@@ -28,7 +36,7 @@ async function submit() {
     form.append('event', JSON.stringify(payload))
     store.info.files.forEach(file => form.append('files[]', file))
 
-    await updateEvent(eventId.value, form)
+    await updateEvent(eventId, form)
 
     toast.add({ title: t('events.edit.success', 'Événement mis à jour !'), color: 'success' })
     store.reset()
@@ -46,8 +54,10 @@ async function submit() {
 }
 
 onUnmounted(() => {
-  store.reset()
-  store.resetEditMode()
+  if (!route.path.includes(String(eventId))) {
+    store.reset()
+    store.resetEditMode()
+  }
 })
 </script>
 
@@ -63,7 +73,7 @@ onUnmounted(() => {
         </h1>
       </section>
 
-      <!-- ── Loading ────────────────────────────────────── -->
+      <!-- ── Loading ────────────────────────────────────────── -->
       <template v-if="pending">
         <div class="flex items-center justify-center py-20">
           <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-muted" />

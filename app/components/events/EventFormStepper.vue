@@ -37,6 +37,8 @@ const stepRefs = computed(() => [
   dateStep.value,
 ])
 
+watch(stepIndex, () => console.log(stepIndex.value))
+
 // ── Navigation ─────────────────────────────────────────────
 async function handleNext() {
   const current = stepRefs.value[stepIndex.value]
@@ -65,6 +67,7 @@ function handlePrev() {
       :items="steps"
       orientation="horizontal"
       class="w-full"
+      v-model="stepIndex"
       :ui="{
         root:      'w-full',
         item:      'flex-1',

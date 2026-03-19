@@ -78,7 +78,7 @@ async function validate(): Promise<boolean> {
     return false
   }
   if (isEndBeforeStart.value) {
-    dateError.value = t('events.stepper.date.end_before_start_error', 'La date de fin doit être après le début.')
+    dateError.value = t('events.stepper.dates.end_before_start_error', 'La date de fin doit être après le début.')
     return false
   }
   dateError.value = ''
@@ -100,10 +100,10 @@ defineExpose({ validate })
         </div>
         <div>
           <h1 class="text-base font-semibold text-highlighted">
-            {{ t('events.stepper.date.subtitle', 'Dates & horaires') }}
+            {{ t('events.stepper.dates.subtitle', 'Dates & horaires') }}
           </h1>
           <p class="mt-0.5 text-sm text-muted">
-            {{ t('events.stepper.date.subtitle_hint', 'Définissez quand se déroule votre événement.') }}
+            {{ t('events.stepper.dates.subtitle_hint', 'Définissez quand se déroule votre événement.') }}
           </p>
         </div>
       </div>
@@ -117,7 +117,7 @@ defineExpose({ validate })
         <div class="flex items-center gap-2">
           <div class="h-2 w-2 rounded-full bg-primary" />
           <span class="text-sm font-medium text-highlighted">
-            {{ t('events.stepper.date.start_label', 'Début') }}
+            {{ t('events.stepper.dates.start_label', 'Début') }}
             <span class="ml-1 text-xs text-error">*</span>
           </span>
         </div>
@@ -132,7 +132,7 @@ defineExpose({ validate })
               {{ store.dates.startDate
               ? new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'long', year: 'numeric' })
                 .format(store.dates.startDate.toDate(getLocalTimeZone()))
-              : t('events.stepper.date.pick_date', 'Choisir une date') }}
+              : t('events.stepper.dates.pick_date', 'Choisir une date') }}
             </UButton>
             <template #content>
               <UCalendar v-model="startDateModel" :min-value="todayDate" class="p-3" />
@@ -174,7 +174,7 @@ defineExpose({ validate })
         <div class="h-px flex-1 bg-border" />
         <UCheckbox
           v-model="store.dates.hasEndDate"
-          :label="t('events.stepper.date.end_toggle', 'Ajouter une date de fin')"
+          :label="t('events.stepper.dates.end_toggle', 'Ajouter une date de fin')"
         />
         <div class="h-px flex-1 bg-border" />
       </div>
@@ -192,7 +192,7 @@ defineExpose({ validate })
           <div class="flex items-center gap-2">
             <div class="h-2 w-2 rounded-full bg-muted" />
             <span class="text-sm font-medium text-highlighted">
-              {{ t('events.stepper.date.end_label', 'Fin') }}
+              {{ t('events.stepper.dates.end_label', 'Fin') }}
             </span>
           </div>
 
@@ -206,7 +206,7 @@ defineExpose({ validate })
                 {{ store.dates.endDate
                 ? new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'long', year: 'numeric' })
                   .format(store.dates.endDate.toDate(getLocalTimeZone()))
-                : t('events.stepper.date.pick_date', 'Choisir une date') }}
+                : t('events.stepper.dates.pick_date', 'Choisir une date') }}
               </UButton>
               <template #content>
                 <UCalendar v-model="endDateModel" :min-value="startDateModel" class="p-3" />
@@ -226,7 +226,7 @@ defineExpose({ validate })
           <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0">
             <p v-if="isEndBeforeStart" class="flex items-center gap-1.5 text-xs text-error">
               <UIcon name="i-lucide-alert-circle" class="size-3.5" />
-              {{ t('events.stepper.date.end_before_start_error', 'La date de fin doit être après le début.') }}
+              {{ t('events.stepper.dates.end_before_start_error', 'La date de fin doit être après le début.') }}
             </p>
           </Transition>
 
@@ -253,7 +253,7 @@ defineExpose({ validate })
         <div v-if="duration" class="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
           <UIcon name="i-lucide-timer" class="size-4 shrink-0 text-primary" />
           <span class="text-sm font-medium text-primary">
-            {{ t('events.stepper.date.duration_label', 'Durée') }}
+            {{ t('events.stepper.dates.duration_label', 'Durée') }}
           </span>
           <span class="text-sm text-muted">{{ duration }}</span>
         </div>

@@ -49,7 +49,5 @@ function isImageMime(mime: string) { return mime.startsWith('image/') }
         <UButton variant="ghost" size="xs" icon="i-lucide-trash-2" color="error" @click="$emit('remove', media)" />
       </li>
     </ul>
-
-    <UDivider class="my-2" />
   </div>
 </template>
