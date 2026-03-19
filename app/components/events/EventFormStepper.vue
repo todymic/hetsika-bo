@@ -18,8 +18,6 @@ const steps = ref<StepperItem[]>([
   { title: t('events.stepper.steps.dates'),         icon: 'i-lucide-calendar-days', slot: 'date'         as const },
 ])
 
-const stepper  = useTemplateRef('stepper')
-
 // ── Manual index tracking ──────────────────────────────────
 const stepIndex  = ref(0)
 const hasPrev    = computed<boolean>(() => stepIndex.value > 0)
@@ -37,7 +35,6 @@ const stepRefs = computed(() => [
   dateStep.value,
 ])
 
-watch(stepIndex, () => console.log(stepIndex.value))
 
 // ── Navigation ─────────────────────────────────────────────
 async function handleNext() {
@@ -48,13 +45,11 @@ async function handleNext() {
   if (isLastStep.value) {
     emit('submit')
   } else {
-    stepper.value?.next()
     stepIndex.value++
   }
 }
 
 function handlePrev() {
-  stepper.value?.prev()
   stepIndex.value--
 }
 </script>
@@ -62,12 +57,12 @@ function handlePrev() {
 <template>
   <section class="flex flex-col gap-4">
     <UStepper
-      ref="stepper"
       :disabled="mode === 'create'"
       :items="steps"
       orientation="horizontal"
       class="w-full"
       v-model="stepIndex"
+      :linear=" mode!=='edit' "
       :ui="{
         root:      'w-full',
         item:      'flex-1',
