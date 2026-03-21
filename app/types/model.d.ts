@@ -16,6 +16,7 @@ export  interface Event {
   deletedAt?: Date
   deletedBy?: number
   isDeleted?: boolean
+  ticketTypes: TicketType[]
 }
 
 export interface Address {
@@ -58,4 +59,12 @@ export interface GlobalStats {
   cancelled: number,
   drafts: number,
   published: number
+}
+
+export interface TicketType {
+  id?:            number
+  name:           string
+  price:          number
+  quantityTotal:  number
+  status:         'active' | 'inactive'
 }

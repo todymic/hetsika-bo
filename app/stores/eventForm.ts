@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { DateValue } from '@internationalized/date'
 import { getLocalTimeZone, CalendarDate } from '@internationalized/date'
-import type {Address, Event, Media} from '~/types/model'
+import type {Address, Event, Media, TicketType} from '~/types/model'
 import {dateToCalendar, dateToTime, toISO} from "~/utils/dateHelper";
 
 export interface UploadedFile {
@@ -11,10 +11,26 @@ export interface UploadedFile {
   error:   string | null
 }
 
+
+
 export const useEventFormStore = defineStore('eventForm', () => {
 
   const isEditMode = ref(false)
   const editingId  = ref<number | null>(null)
+
+  const tickets = ref<TicketType[]>([])
+
+  function addTicket(ticket: TicketType) {
+    tickets.value.push({ ...ticket })
+  }
+
+  function updateTicket(index: number, ticket: TicketType) {
+    tickets.value[index] = { ...ticket }
+  }
+
+  function removeTicket(index: number) {
+    tickets.value.splice(index, 1)
+  }
 
   // ── Info step ─────────────────────────────────────────────
   const info = ref({
@@ -74,6 +90,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
         countryCode: address.value.selectedCountry,
       },
       removedFileIds: info.value.removedFileIds,
+      ticketTypes: tickets.value,
     }
   }
 
@@ -112,6 +129,8 @@ export const useEventFormStore = defineStore('eventForm', () => {
       hasEndDate: hasEnd,
     }
 
+    tickets.value = event.ticketTypes ?? []
+
 
   }
 
@@ -133,6 +152,8 @@ export const useEventFormStore = defineStore('eventForm', () => {
     }
     address.value = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '' }
     dates.value   = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
+
+    tickets.value = []
   }
 
   function resetEditMode() {
@@ -152,5 +173,6 @@ export const useEventFormStore = defineStore('eventForm', () => {
     buildPayload,
     reset,
     resetEditMode,
+    tickets, addTicket, updateTicket, removeTicket
   }
 })

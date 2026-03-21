@@ -45,8 +45,8 @@ export default defineNuxtConfig({
   },
   devServer: {
     https: {
-      key: resolve(__dirname, 'certs/localhost.key'),
-      cert: resolve(__dirname, 'certs/localhost.crt')
+      key: './certs/localhost-key.pem',
+      cert: './certs/localhost.pem'
     }
   }
 })

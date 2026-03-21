@@ -16,6 +16,7 @@ const steps = ref<StepperItem[]>([
   { title: t('events.stepper.steps.info'),         icon: 'i-lucide-contact',       slot: 'info'         as const },
   { title: t('events.stepper.steps.localisation'),  icon: 'i-lucide-map-pin',       slot: 'localisation' as const },
   { title: t('events.stepper.steps.dates'),         icon: 'i-lucide-calendar-days', slot: 'date'         as const },
+  { title: t('events.stepper.steps.tickets'),       icon: 'i-lucide-ticket',        slot: 'tickets'      as const },
 ])
 
 // ── Manual index tracking ──────────────────────────────────
@@ -28,11 +29,13 @@ const isLastStep = computed<boolean>(() => !hasNext.value)
 const infoStep         = useTemplateRef('infoStep')
 const localisationStep = useTemplateRef('localisationStep')
 const dateStep         = useTemplateRef('dateStep')
+const ticketsStep = useTemplateRef('ticketsStep')
 
 const stepRefs = computed(() => [
   infoStep.value,
   localisationStep.value,
   dateStep.value,
+  ticketsStep.value,
 ])
 
 
@@ -62,7 +65,7 @@ function handlePrev() {
       orientation="horizontal"
       class="w-full"
       v-model="stepIndex"
-      :linear=" mode!=='edit' "
+      :linear=" mode !=='edit' "
       :ui="{
         root:      'w-full',
         item:      'flex-1',
@@ -73,6 +76,8 @@ function handlePrev() {
       <template #info>         <EventsStepsInfoStep         ref="infoStep"         /> </template>
       <template #localisation> <EventsStepsLocalisationStep ref="localisationStep" /> </template>
       <template #date>         <EventsStepsDateStep         ref="dateStep"         /> </template>
+      <template #tickets>      <EventsStepsTicketsStep      ref="ticketsStep"      /> </template>
+
     </UStepper>
 
     <!-- ── Navigation ─────────────────────────────────── -->
