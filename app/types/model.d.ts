@@ -65,6 +65,10 @@ export interface TicketType {
   id?:            number
   name:           string
   price:          number
+  currency:       string
   quantityTotal:  number
-  status:         'active' | 'inactive'
+  quantitySold?:  number
+  description?:   string
+  eventId?:       number
+  status?:        'SOLD_OUT' | 'ENABLED' | 'DISABLED' | 'INACTIVE'
 }

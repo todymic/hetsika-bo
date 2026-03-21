@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import type { DateValue } from '@internationalized/date'
-import { getLocalTimeZone, CalendarDate } from '@internationalized/date'
 import type {Address, Event, Media, TicketType} from '~/types/model'
 import {dateToCalendar, dateToTime, toISO} from "~/utils/dateHelper";
 
@@ -10,8 +9,6 @@ export interface UploadedFile {
   preview: string | null
   error:   string | null
 }
-
-
 
 export const useEventFormStore = defineStore('eventForm', () => {
 

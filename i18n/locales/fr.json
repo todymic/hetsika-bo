@@ -147,7 +147,8 @@
       },
 
       "tickets": {
-        "subtitle": "Définissez les types de billets disponibles"
+        "subtitle": "Définissez les types de billets disponibles",
+        "sold_info": "{sold} billet(s) déjà vendu(s) sur {total}"
       },
 
       "dates": {
