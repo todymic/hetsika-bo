@@ -17,6 +17,8 @@ export const useEventFormStore = defineStore('eventForm', () => {
 
   const tickets = ref<TicketType[]>([])
 
+  const savedEventId = ref<number | null>(null)
+
   function addTicket(ticket: TicketType) {
     tickets.value.push({ ...ticket })
   }
@@ -126,7 +128,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
       hasEndDate: hasEnd,
     }
 
-    tickets.value = event.ticketTypes ?? []
+    tickets.value = (event.ticketTypes ?? []).map(t => ({ ...t }))
 
 
   }
@@ -158,6 +160,12 @@ export const useEventFormStore = defineStore('eventForm', () => {
     editingId.value  = null
   }
 
+
+
+  function setSavedEventId(id: number) {
+    savedEventId.value = id
+  }
+
   return {
     // State
     info,
@@ -165,11 +173,17 @@ export const useEventFormStore = defineStore('eventForm', () => {
     dates,
     isEditMode,
     editingId,
+    savedEventId,
     // Actions
     loadEvent,
     buildPayload,
     reset,
     resetEditMode,
-    tickets, addTicket, updateTicket, removeTicket
+    tickets,
+    addTicket,
+    updateTicket,
+    removeTicket,
+
+    setSavedEventId
   }
 })

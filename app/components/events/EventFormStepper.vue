@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { StepperItem } from '#ui/components/Stepper.vue'
+import {useEventFormStore} from "~/stores/eventForm";
 
 const props = defineProps<{
   mode:    'create' | 'edit'
@@ -7,8 +8,16 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: []
+  submit: [],
+  save:   [onSuccess: (id: number) => void]
 }>()
+
+const DATE_STEP_INDEX    = 2  // index od dates step
+const TICKETS_STEP_INDEX = 3 // index of las step
+
+const isSaving = ref(false)
+
+const store = useEventFormStore();
 
 const { t } = useI18n()
 
@@ -44,6 +53,17 @@ async function handleNext() {
   const current = stepRefs.value[stepIndex.value]
   const valid   = await current?.validate()
   if (!valid) return
+
+  // save ID
+  if (stepIndex.value === DATE_STEP_INDEX) {
+    isSaving.value = true
+    emit('save', (id: number) => {
+      store.setSavedEventId(id)
+      stepIndex.value++
+      isSaving.value = false
+    })
+    return
+  }
 
   if (isLastStep.value) {
     emit('submit')
@@ -92,7 +112,7 @@ function handlePrev() {
       </UButton>
 
       <UButton
-        :loading="loading"
+        :loading="loading || isSaving"
         :trailing-icon="isLastStep
           ? (mode === 'edit' ? 'i-lucide-save' : 'i-lucide-send')
           : 'i-lucide-arrow-right'"
@@ -102,7 +122,9 @@ function handlePrev() {
         ? (mode === 'edit'
           ? t('events.stepper.nav.update', 'Mettre à jour')
           : t('events.stepper.nav.submit', 'Publier'))
-        : t('events.stepper.nav.next', 'Next') }}
+        : stepIndex === DATE_STEP_INDEX
+          ? t('events.stepper.nav.save_and_continue', 'Enregistrer et continuer')
+          : t('events.stepper.nav.next', 'Next') }}
       </UButton>
     </div>
   </section>

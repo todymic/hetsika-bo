@@ -8,7 +8,8 @@ const toast            = useToast()
 const { createEvent }  = useEventStore()
 const loading          = ref(false)
 
-async function submit() {
+
+async function save(onSuccess: (id: number) => void) {
   loading.value = true
   try {
     const payload = store.buildPayload()
@@ -17,11 +18,33 @@ async function submit() {
     store.info.files.forEach(file => form.append('files[]', file))
 
     const response = await createEvent(form)
-    if (response.status === 'success') {
-      toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
-      store.reset()
-      await router.push('/events')
+
+    if (response.status === 'success' && response.event.id) {
+      onSuccess(response.event.id)
     }
+  } catch (err: any) {
+    toast.add({
+      title:       t('events.create.error', 'Erreur'),
+      description: err?.data?.message ?? 'Une erreur est survenue',
+      color:       'error',
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+async function submit() {
+  loading.value = true
+  try {
+
+    const eventId = store.savedEventId
+    if (!eventId) return
+
+    //await createTickets(eventId, store.tickets)
+
+    toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
+    store.reset()
+    await router.push('/events')
   } catch (err: any) {
     toast.add({
       title:       t('events.create.error', 'Erreur'),
@@ -50,6 +73,7 @@ onUnmounted(() => store.reset())
       <EventsEventFormStepper
         mode="create"
         :loading="loading"
+        @save="save"
         @submit="submit"
       />
 

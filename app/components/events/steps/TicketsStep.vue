@@ -2,6 +2,8 @@
 import { z } from 'zod'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type {TicketType} from "~/types/model";
+import {useTicketTypeStore} from "~/stores/ticketTypeStore";
+import {useToast} from "@nuxt/ui/composables";
 
 const { t }  = useI18n()
 const store  = useEventFormStore()
@@ -46,6 +48,7 @@ const isOpen    = ref(false)
 const editIndex = ref<number | null>(null)
 const isEditing = computed(() => editIndex.value !== null)
 
+
 const emptyForm = (): TicketType => ({
   name:          '',
   price:         0,
@@ -56,6 +59,9 @@ const emptyForm = (): TicketType => ({
 
 const form      = useTemplateRef('form')
 const formState = ref<TicketType>(emptyForm())
+
+const ticketTypeStore = useTicketTypeStore();
+const toast = useToast()
 
 // ── Modal actions ──────────────────────────────────────────
 function openCreate() {
@@ -83,11 +89,23 @@ async function saveTicket() {
   if (!result.success) return
 
   if (isEditing.value) {
-    store.updateTicket(editIndex.value!, { ...store.tickets[editIndex.value!], ...result.data })
+    const index = editIndex.value!
+
+    const oldTicketType = store.tickets[index] as TicketType;
+    ticketTypeStore.update(oldTicketType.id!, result.data)
+      .then(response => {
+        store.updateTicket(index, response.ticketType)
+        closeModal()
+      })
   } else {
-    store.addTicket(result.data)
+    ticketTypeStore.createTicket(result.data)
+      .then(response => {
+        store.addTicket(response.ticketType)
+        closeModal()
+      })
+
   }
-  closeModal()
+
 }
 
 function removeTicket(index: number) {
@@ -98,6 +116,20 @@ function removeTicket(index: number) {
 async function validate(): Promise<boolean> {
   return true // tickets are optional
 }
+
+onMounted(() => {
+  ticketTypeStore.getList()
+    .then(response => {
+      store.tickets = []
+      response.ticketTypes.forEach(t => store.addTicket(t))
+    })
+    .catch(err => toast.add({
+      title:       t('tickets.get.error', 'Erreur'),
+      description: err?.data?.message ?? 'Une erreur est survenue',
+      color:       'error',
+    }))
+})
+
 
 defineExpose({ validate })
 </script>
@@ -149,7 +181,6 @@ defineExpose({ validate })
         <!-- Quantity sold / total -->
         <template #quantityTotal-cell="{ row }">
           <span>
-            <span class="text-muted text-xs">{{ (row.original as TicketType).quantitySold ?? 0 }} /</span>
             {{ (row.original as TicketType).quantityTotal }}
           </span>
         </template>

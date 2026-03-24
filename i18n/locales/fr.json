@@ -87,8 +87,9 @@
       "nav": {
         "prev": "Précédent",
         "next": "Suivant",
-        "submit": "Publier",
-        "update": "Mettre à jour"
+        "submit": "Enregistrer",
+        "update": "Mettre à jour",
+        "save_and_continue": "Enregistrer et continuer"
       },
 
       "info": {
@@ -148,7 +149,12 @@
 
       "tickets": {
         "subtitle": "Définissez les types de billets disponibles",
-        "sold_info": "{sold} billet(s) déjà vendu(s) sur {total}"
+        "sold_info": "{sold} billet(s) déjà vendu(s) sur {total}",
+        "get": {
+          "error": "Erreur de récupération"
+        }
+
+
       },
 
       "dates": {
