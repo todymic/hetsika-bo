@@ -27,6 +27,30 @@ onUnmounted(() => {
   store.resetEditMode()
 })
 
+async function save(onSuccess: (id: number) => void) {
+  loading.value = true
+  try {
+    const payload = store.buildPayload()
+    const form    = new FormData()
+    form.append('event', JSON.stringify(payload))
+    store.info.files.forEach(file => form.append('files[]', file))
+
+    const response = await updateEvent(form)
+
+    if (response.status === 'success' && response.event.id) {
+      onSuccess(response.event.id)
+    }
+  } catch (err: any) {
+    toast.add({
+      title:       t('events.create.error', 'Erreur'),
+      description: err?.data?.message ?? 'Une erreur est survenue',
+      color:       'error',
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
 
 async function submit() {
   loading.value = true
@@ -36,9 +60,9 @@ async function submit() {
     form.append('event', JSON.stringify(payload))
     store.info.files.forEach(file => form.append('files[]', file))
 
-    await updateEvent(eventId, form)
+   // await updateEvent(eventId, form)
 
-    toast.add({ title: t('events.edit.success', 'Événement mis à jour !'), color: 'success' })
+
     store.reset()
     store.resetEditMode()
     await router.push('/events')
@@ -84,6 +108,7 @@ onUnmounted(() => {
         v-else
         mode="edit"
         :loading="loading"
+        @save="save"
         @submit="submit"
       />
 

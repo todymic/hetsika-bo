@@ -40,9 +40,7 @@ async function submit() {
     const eventId = store.savedEventId
     if (!eventId) return
 
-    //await createTickets(eventId, store.tickets)
 
-    toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
     store.reset()
     await router.push('/events')
   } catch (err: any) {

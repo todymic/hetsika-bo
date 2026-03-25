@@ -152,7 +152,11 @@
         "sold_info": "{sold} billet(s) déjà vendu(s) sur {total}",
         "get": {
           "error": "Erreur de récupération"
+        },
+        "remove": {
+          "success": "Type de billet supprimé"
         }
+
 
 
       },

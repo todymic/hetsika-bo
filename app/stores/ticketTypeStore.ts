@@ -32,7 +32,7 @@ export const useTicketTypeStore = defineStore('ticketType', () => {
   }
 
   const deleteOne = async (id: number): Promise<void> => {
-    return await del<void>(`/organizer/events/${eventId.value}/ticket-types/${id}`)
+    return await del(`/organizer/events/${eventId.value}/ticket-types/${id}`)
   }
 
   const update = async (id: number, ticketType: TicketType): Promise<TicketTypeResponse> => {

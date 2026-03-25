@@ -95,21 +95,42 @@ async function saveTicket() {
     ticketTypeStore.update(oldTicketType.id!, result.data)
       .then(response => {
         store.updateTicket(index, response.ticketType)
+        toast.clear()
+        toast.add({ title: t('events.edit.success', 'Événement mis à jour !'), color: 'success' })
         closeModal()
       })
+      .catch(err => toast.add({
+        title:       t('tickets.edit.error', 'Erreur'),
+        description: err?.data?.message ?? 'Une erreur est survenue',
+        color:       'error',
+      }))
   } else {
     ticketTypeStore.createTicket(result.data)
       .then(response => {
+
         store.addTicket(response.ticketType)
+        toast.clear()
+        toast.add({ title: t('events.create.success', 'Événement créé !'), color: 'success' })
         closeModal()
       })
+      .catch(err => toast.add({
+        title:       t('tickets.add.error', 'Erreur'),
+        description: err?.data?.message ?? 'Une erreur est survenue',
+        color:       'error',
+      }))
 
   }
 
 }
 
 function removeTicket(index: number) {
-  store.removeTicket(index)
+  const ticketType = store.tickets[index] as TicketType;
+  ticketTypeStore.deleteOne(ticketType.id!).then(response => {
+    store.removeTicket(index)
+    toast.clear()
+    toast.add({ title: t('tickets.remove.success', 'Type de billet supprimé !'), color: 'success' })
+  })
+
 }
 
 // ── Step validation ────────────────────────────────────────
