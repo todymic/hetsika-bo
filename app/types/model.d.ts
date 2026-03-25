@@ -72,3 +72,41 @@ export interface TicketType {
   eventId?:       number
   status?:        'SOLD_OUT' | 'ENABLED' | 'DISABLED' | 'INACTIVE'
 }
+
+export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'ERROR' | 'REFUNDED'
+
+export interface Customer {
+  id:        number
+  firstName: string
+  lastName:  string
+  email:     string
+  phone?:    string
+}
+
+export interface OrderItem {
+  id:             number
+  ticketType:     TicketType
+  quantity:       number
+  unitPriceCents: number
+  currency:       string
+}
+
+export interface Order {
+  id:         number
+  customer:   Customer
+  status:     OrderStatus
+  totalCents: number
+  currency:   string
+  createdAt:  string
+  items:      OrderItem[]
+}
+
+export interface EventSalesStats {
+  totalParticipants:  number
+  totalAmountCents:   number
+  byTicketType: {
+    ticketType: TicketType
+    sold:       number
+    revenue:    number
+  }[]
+}

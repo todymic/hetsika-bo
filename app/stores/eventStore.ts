@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import type {Event, GlobalStats} from "~/types/model";
+import type {Event, EventSalesStats, GlobalStats, Order} from "~/types/model";
 import {useApi} from "~/composables/useApi";
 import {useAuthStore} from "~/stores/authStore";
 
@@ -78,6 +78,15 @@ export const useEventStore = defineStore('event', () => {
     return response.stats;
   }
 
+  const getEventStats = async (id: number): Promise<EventSalesStats> =>
+    await get(`/api/events/${id}/stats`)
+
+  const getEventOrders = async (id: number): Promise<Order[]> =>
+    await get(`/api/events/${id}/orders`)
+
+  const finalizeOrder = async (orderId: number): Promise<void> =>
+    await post(`/api/orders/${orderId}/finalize`,{})
+
   return {
     getEvents,
     createEvent,
@@ -85,6 +94,10 @@ export const useEventStore = defineStore('event', () => {
     updateEvent,
     getEvent,
     updateStatus,
-    getGlobalStats
+    getGlobalStats,
+    finalizeOrder,
+    getEventOrders,
+    getEventStats
+
   }
 });

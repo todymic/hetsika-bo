@@ -40,9 +40,8 @@ async function submit() {
     const eventId = store.savedEventId
     if (!eventId) return
 
-
     store.reset()
-    await router.push('/events')
+    await router.push(`/events/${eventId}`)
   } catch (err: any) {
     toast.add({
       title:       t('events.create.error', 'Erreur'),

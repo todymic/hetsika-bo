@@ -59,13 +59,9 @@ async function submit() {
     const form    = new FormData()
     form.append('event', JSON.stringify(payload))
     store.info.files.forEach(file => form.append('files[]', file))
-
-   // await updateEvent(eventId, form)
-
-
     store.reset()
     store.resetEditMode()
-    await router.push('/events')
+    await router.push(`/events/${eventId}`)
   } catch (err: any) {
     toast.add({
       title:       t('events.edit.error', 'Erreur'),
