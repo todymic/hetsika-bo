@@ -35,7 +35,7 @@ async function save(onSuccess: (id: number) => void) {
     form.append('event', JSON.stringify(payload))
     store.info.files.forEach(file => form.append('files[]', file))
 
-    const response = await updateEvent(form)
+    const response = await updateEvent(eventId, form)
 
     if (response.status === 'success' && response.event.id) {
       onSuccess(response.event.id)
