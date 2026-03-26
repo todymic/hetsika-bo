@@ -284,7 +284,7 @@ const cancelEvent = async (id: number) => {
         >
           <div class="flex">
             <!-- Cover -->
-            <div class="w-36 sm:w-48 flex-shrink-0 relative overflow-hidden bg-muted min-h-[7rem]">
+            <div class="w-36 sm:w-48 shrink-0 relative overflow-hidden bg-muted min-h-28">
               <img
                 v-if="getCover(event)"
                 :src="getCover(event)!"
@@ -332,24 +332,27 @@ const cancelEvent = async (id: number) => {
               <!-- Actions -->
               <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 flex-shrink-0">
                 <div class="flex items-center gap-1 md:gap-2">
-                  <UTooltip :text="t('events.list.edit')">
-                    <UButton loading-auto v-if="isDesktop" size="md" variant="solid" :label="t('common.edit')" color="warning" :to="`/events/${event.id}/edit`"></UButton>
-                    <UButton v-else loading-auto icon="i-lucide-pencil" size="md" variant="ghost" color="neutral" :to="`/events/${event.id}/edit`" />
+                  <UTooltip :text="t('events.list.show')">
+                    <UButton loading-auto
+                             size="md"
+                             :icon="isDesktop ? '': 'i-lucide-eye'"
+                             :variant="isDesktop ? 'solid': 'ghost'"
+                             :color="info"
+                             :to="`/events/${event.id}`">
+                      {{ isDesktop ? t('common.show') : ""}}
+                    </UButton>
+
                   </UTooltip>
-                  <UTooltip v-if="event.status !== 'CANCELLED'" :text="t('common.cancel')">
-                    <UButton v-if="isDesktop"
+                  <UTooltip :text="t('events.list.edit')">
+                    <UButton loading-auto
                              size="md"
-                             :label="t('common.cancel')"
-                             color="info"
-                             variant="solid"
-                             loading-auto
-                             @click="cancelEvent(Number(event.id))"></UButton>
-                    <UButton v-else
-                             icon="i-lucide:octagon-pause"
-                             size="md"
-                             loading-auto
-                             variant="ghost"
-                             color="neutral" @click="cancelEvent(Number(event.id))" />
+                             :icon="isDesktop ? '': 'i-lucide-pencil'"
+                             :variant="isDesktop ? 'solid': 'ghost'"
+                             :color="isDesktop ? 'warning':'neutral'"
+                             :to="`/events/${event.id}/edit`">
+                      {{ isDesktop ? t('common.edit') : ""}}
+                    </UButton>
+
                   </UTooltip>
                   <UTooltip :text="t('events.list.delete')">
                     <UButton v-if="isDesktop" loading-auto size="md" color="error" variant="solid" :label="t('common.delete')" @click="confirmDelete(Number(event.id))" />

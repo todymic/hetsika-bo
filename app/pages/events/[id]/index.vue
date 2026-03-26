@@ -1,393 +1,408 @@
 <script setup lang="ts">
-import type { ColumnDef } from '@tanstack/vue-table'
-import type { Order, OrderItem, EventSalesStats } from '~/types/model'
+import * as z from 'zod'
+import type { EditorToolbarItem } from '#ui/components/EditorToolbar.vue'
+import type { SelectItem } from '#ui/components/Select.vue'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 import { useEventStore } from '~/stores/eventStore'
 
-const { t }     = useI18n()
-const route     = useRoute()
-const router    = useRouter()
-const toast     = useToast()
-const { getEvent, getEventStats, getEventOrders, finalizeOrder } = useEventStore()
+definePageMeta({ layout: 'event-dashboard' })
 
-const eventId = Number(route.params.id)
+const { t }                         = useI18n()
+const route                         = useRoute()
+const toast                         = useToast()
+const { getEvent, updateEvent } = useEventStore()
+const { getCategories }             = useCategoryStore()
+const eventId                       = Number(route.params.id)
 
-// ── Data fetching ──────────────────────────────────────────
-const pending      = ref(true)
-const event        = ref()
-const stats        = ref<EventSalesStats | null>(null)
-const orders       = ref<Order[]>([])
+// ── State ──────────────────────────────────────────────────
+const pending  = ref(true)
+const saving   = ref(false)
+const form     = useTemplateRef('form')
+const event    = ref<any>(null)
 
+const state = ref({
+  title:              '',
+  description:        '',
+  selectedCategories: [] as string[],
+})
+
+const original        = ref('')
+const categoryOptions = ref<SelectItem[]>([])
+
+// ── Validation ─────────────────────────────────────────────
+const TITLE_MAX      = 200
+const titleLength    = computed(() => state.value.title.length)
+const titleNearLimit = computed(() => titleLength.value > TITLE_MAX * 0.8)
+
+const schema = z.object({
+  title:              z.string().min(1, { message: t('events.stepper.info.error.title_required') }),
+  selectedCategories: z.array(z.string()).min(1, { message: t('events.stepper.info.error.categories_required') }),
+})
+
+// ── Unsaved changes ────────────────────────────────────────
+const isDirty = computed(() => JSON.stringify(state.value) !== original.value)
+function markSaved() { original.value = JSON.stringify(state.value) }
+
+function cancelChanges() {
+  const parsed = JSON.parse(original.value)
+  state.value  = parsed
+}
+
+onBeforeRouteLeave(() => {
+  if (!isDirty.value) return true
+  return window.confirm(t('common.unsaved_confirm', 'Vous avez des modifications non enregistrées. Quitter quand même ?'))
+})
+
+// ── Cover image ────────────────────────────────────────────
+const MAX_COVER_BYTES  = 5 * 1024 * 1024
+const coverInput       = useTemplateRef('coverInput')
+const coverFile        = ref<File | null>(null)
+const coverPreview     = ref<string | null>(null)
+const coverError       = ref('')
+const isCoverDragging  = ref(false)
+const coverRemoved     = ref(false)
+
+function validateCover(file: File): string | null {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
+    return t('events.stepper.info.upload_error_type', 'Type non supporté (JPG, PNG, WEBP)')
+  if (file.size > MAX_COVER_BYTES)
+    return t('events.stepper.info.upload_error_size', 'Max 5 Mo')
+  return null
+}
+
+function setCover(file: File) {
+  const error = validateCover(file)
+  if (error) { coverError.value = error; return }
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value)
+  coverFile.value    = file
+  coverPreview.value = URL.createObjectURL(file)
+  coverError.value   = ''
+  coverRemoved.value = false
+}
+
+function onCoverInputChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) setCover(file)
+  ;(e.target as HTMLInputElement).value = ''
+}
+
+function onCoverDrop(e: DragEvent) {
+  isCoverDragging.value = false
+  const file = e.dataTransfer?.files?.[0]
+  if (file) setCover(file)
+}
+
+function removeCover() {
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value)
+  coverFile.value    = null
+  coverPreview.value = null
+  coverError.value   = ''
+  coverRemoved.value = true
+}
+
+const existingCover = computed(() =>
+  !coverRemoved.value ? event.value?.medias?.find((m: any) => m.isCover) ?? event.value?.medias?.[0] : null
+)
+
+const displayCover = computed(() => coverPreview.value ?? existingCover.value?.url ?? null)
+
+onUnmounted(() => {
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value)
+})
+
+// ── Complétude ─────────────────────────────────────────────
+const completenessFields = computed(() => [
+  { key: 'title',       filled: !!state.value.title },
+  { key: 'categories',  filled: state.value.selectedCategories.length > 0 },
+  { key: 'description', filled: state.value.description.length > 20 },
+  { key: 'cover',       filled: !!displayCover.value },
+])
+
+// ── Editor ─────────────────────────────────────────────────
+const editorExtensions = [
+  TaskList,
+  TaskItem.configure({ nested: true }),
+]
+
+const items: EditorToolbarItem[] = [
+  { kind: 'bold',       label: 'bold',   icon: 'i-lucide-bold'         },
+  { kind: 'mark',       mark: 'italic',  icon: 'i-lucide-italic'       },
+  { kind: 'heading',    level: 1,        icon: 'i-lucide-heading-1'    },
+  { kind: 'heading',    level: 2,        icon: 'i-lucide-heading-2'    },
+  { kind: 'textAlign',  align: 'left',   icon: 'i-lucide-align-left'   },
+  { kind: 'textAlign',  align: 'center', icon: 'i-lucide-align-center' },
+  { kind: 'bulletList',                  icon: 'i-lucide-list'         },
+  { kind: 'orderedList',                 icon: 'i-lucide-list-ordered' },
+  { kind: 'blockquote',                  icon: 'i-lucide-quote'        },
+  { kind: 'link',                        icon: 'i-lucide-link'         },
+]
+
+// ── Mount ──────────────────────────────────────────────────
 onMounted(async () => {
   try {
-    ;[event.value, stats.value, orders.value] = await Promise.all([
+    const [evt, categories] = await Promise.all([
       getEvent(eventId),
-      getEventStats(eventId),
-      getEventOrders(eventId),
+      getCategories(),
     ])
+    event.value                    = evt
+    state.value.title              = evt.title
+    state.value.description        = evt.description ?? ''
+    state.value.selectedCategories = evt.categories.map((c: any) => String(c.id))
+    categoryOptions.value          = categories.map((c: any) => ({ label: c.name, value: String(c.id) }))
+    markSaved()
   } finally {
     pending.value = false
   }
 })
 
-// ── Status config ──────────────────────────────────────────
-const statusConfig: Record<string, { label: string; color: 'success' | 'warning' | 'error' | 'neutral' | 'info' }> = {
-  PAID:      { label: t('orders.status.paid',      'Payé'),      color: 'success' },
-  PENDING:   { label: t('orders.status.pending',   'En attente'), color: 'warning' },
-  ERROR:     { label: t('orders.status.error',     'Erreur'),    color: 'error'   },
-  CANCELLED: { label: t('orders.status.cancelled', 'Annulé'),    color: 'neutral' },
-  REFUNDED:  { label: t('orders.status.refunded',  'Remboursé'), color: 'info'    },
-}
+// ── Save ───────────────────────────────────────────────────
+async function save() {
+  try { await (form.value as any)?.validate() } catch { return }
+  const result = schema.safeParse(state.value)
+  if (!result.success) return
 
-// ── Columns ────────────────────────────────────────────────
-const columns: ColumnDef<Order>[] = [
-  { id: 'id',        accessorKey: 'id',        header: t('orders.col_id',      '#')          },
-  { id: 'customer',  accessorKey: 'customer',  header: t('orders.col_customer', 'Client')    },
-  { id: 'contact',   accessorKey: 'contact',   header: t('orders.col_contact',  'Contact')   },
-  { id: 'createdAt', accessorKey: 'createdAt', header: t('orders.col_date',     'Date')      },
-  { id: 'total',     accessorKey: 'totalCents', header: t('orders.col_total',   'Montant')   },
-  { id: 'status',    accessorKey: 'status',    header: t('orders.col_status',   'Statut')    },
-  { id: 'actions',   header: ''                                                               },
-]
-
-// ── Order detail modal ─────────────────────────────────────
-const selectedOrder   = ref<Order | null>(null)
-const detailOpen      = ref(false)
-const finalizeLoading = ref(false)
-
-function openDetail(order: Order) {
-  selectedOrder.value = order
-  detailOpen.value    = true
-}
-
-async function handleFinalize(order: Order) {
-  finalizeLoading.value = true
+  saving.value = true
   try {
-    await finalizeOrder(order.id)
-    toast.add({ title: t('orders.finalize_success', 'Billets générés avec succès'), color: 'success' })
-    // Refresh orders
-    orders.value = await getEventOrders(eventId)
+    const formData = new FormData()
+    formData.append('event', JSON.stringify({
+      title:       state.value.title,
+      description: state.value.description,
+      categoryIds: state.value.selectedCategories.map(Number),
+      ...(coverRemoved.value && existingCover.value
+        ? { removedFileIds: [existingCover.value.id] }
+        : {}),
+    }))
+    if (coverFile.value) {
+      formData.append('files[]', coverFile.value)
+    }
+
+    await updateEvent(eventId, formData)
+    markSaved()
+    toast.add({ title: t('events.section.info_saved', 'Informations enregistrées'), color: 'success' })
   } catch {
-    toast.add({ title: t('orders.finalize_error', 'Erreur lors de la génération'), color: 'error' })
+    toast.add({ title: t('common.error', 'Erreur'), color: 'error' })
   } finally {
-    finalizeLoading.value = false
+    saving.value = false
   }
-}
-
-// ── Helpers ────────────────────────────────────────────────
-function formatCents(cents: number, currency = 'EUR') {
-  return new Intl.NumberFormat('fr', { style: 'currency', currency }).format(cents / 100)
-}
-
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('fr', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  }).format(new Date(iso))
-}
-
-// ── Pie chart data ─────────────────────────────────────────
-const chartData = computed(() => {
-  if (!stats.value) return null
-  return {
-    labels:   stats.value.byTicketType.map(b => b.ticketType.name),
-    datasets: [{
-      data:            stats.value.byTicketType.map(b => b.sold),
-      backgroundColor: ['#1D9E75', '#7F77DD', '#D85A30', '#378ADD', '#BA7517', '#D4537E'],
-      borderWidth:     0,
-    }],
-  }
-})
-
-const chartOptions = {
-  responsive:         true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { position: 'bottom' as const },
-  },
 }
 </script>
 
 <template>
-  <UContainer>
-    <div class="flex flex-col gap-8 pb-12">
+  <div class="space-y-5 p-6">
 
-      <!-- ── Header ─────────────────────────────────────── -->
-      <section class="flex items-center gap-3">
-        <UButton variant="ghost" icon="i-lucide-arrow-left" size="sm" @click="router.back()" />
-        <div class="min-w-0 flex-1">
-          <h1 class="truncate text-xl font-semibold text-highlighted">
-            {{ event?.title ?? '…' }}
-          </h1>
-          <p v-if="event?.startAt" class="mt-0.5 text-sm text-muted">
-            {{ formatDate(event.startAt) }}
-          </p>
-        </div>
-        <UButton
-          icon="i-lucide-pencil"
-          variant="outline"
-          size="sm"
-          :to="`/events/${eventId}/edit`"
-        >
-          {{ t('common.edit', 'Modifier') }}
-        </UButton>
-      </section>
+    <!-- ── Page header ────────────────────────────────────── -->
+    <EventsDashboardPageHeader
+      icon="i-lucide-badge-info"
+      :title="t('events.dashboard.menu.info', 'Informations')"
+      :description="t('events.stepper.info.subtitle_hint', 'Titre, catégories et description')"
+      :is-dirty="isDirty"
+      :saving="saving"
+      @save="save"
+      @cancel="cancelChanges"
+    />
 
-      <!-- ── Loading ────────────────────────────────────── -->
-      <template v-if="pending">
-        <div class="flex items-center justify-center py-20">
-          <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-muted" />
-        </div>
-      </template>
-
-      <template v-else>
-
-        <!-- ── Sales stats ──────────────────────────────── -->
-        <section class="space-y-4">
-          <h2 class="text-base font-medium text-highlighted">
-            {{ t('events.view.stats_title', 'Statistiques de vente') }}
-          </h2>
-
-          <!-- KPI cards -->
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <UCard class="p-4">
-              <p class="text-xs text-muted">{{ t('events.view.total_participants', 'Participants') }}</p>
-              <p class="mt-1 text-2xl font-semibold text-highlighted">
-                {{ stats?.totalParticipants ?? 0 }}
-              </p>
-            </UCard>
-
-            <UCard class="p-4">
-              <p class="text-xs text-muted">{{ t('events.view.total_revenue', 'Recettes') }}</p>
-              <p class="mt-1 text-2xl font-semibold text-highlighted">
-                {{ stats ? formatCents(stats.totalAmountCents) : '—' }}
-              </p>
-            </UCard>
-
-            <UCard class="col-span-2 p-4">
-              <p class="text-xs text-muted mb-2">{{ t('events.view.by_ticket_type', 'Par type de billet') }}</p>
-              <div class="space-y-1.5">
-                <div
-                  v-for="b in stats?.byTicketType"
-                  :key="b.ticketType.id"
-                  class="flex items-center justify-between"
-                >
-                  <span class="text-sm text-highlighted">{{ b.ticketType.name }}</span>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs text-muted">{{ b.sold }} vendus</span>
-                    <span class="text-sm font-medium text-highlighted">
-                      {{ formatCents(b.revenue) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </UCard>
-          </div>
-
-          <!-- Pie chart -->
-          <UCard v-if="chartData" class="p-4">
-            <p class="text-xs font-medium text-muted mb-4">
-              {{ t('events.view.chart_title', 'Répartition des billets vendus') }}
-            </p>
-            <div class="h-64">
-              <canvas id="pie-chart" />
-            </div>
-          </UCard>
-        </section>
-
-        <!-- ── Orders ────────────────────────────────────── -->
-        <section class="space-y-4">
-          <h2 class="text-base font-medium text-highlighted">
-            {{ t('events.view.orders_title', 'Commandes') }}
-          </h2>
-
-          <UCard class="overflow-hidden p-0">
-            <div class="overflow-x-auto">
-              <UTable :data="orders" :columns="columns" class="min-w-[640px]">
-
-                <!-- Customer name -->
-                <template #customer-cell="{ row }">
-                  <div>
-                    <p class="text-sm font-medium text-highlighted">
-                      {{ (row.original as Order).customer.firstName }}
-                      {{ (row.original as Order).customer.lastName }}
-                    </p>
-                  </div>
-                </template>
-
-                <!-- Contact -->
-                <template #contact-cell="{ row }">
-                  <div class="space-y-0.5">
-                    <p class="text-xs text-muted">{{ (row.original as Order).customer.email }}</p>
-                    <p v-if="(row.original as Order).customer.phone" class="text-xs text-muted">
-                      {{ (row.original as Order).customer.phone }}
-                    </p>
-                  </div>
-                </template>
-
-                <!-- Date -->
-                <template #createdAt-cell="{ row }">
-                  <span class="text-sm text-muted">
-                    {{ formatDate((row.original as Order).createdAt) }}
-                  </span>
-                </template>
-
-                <!-- Total -->
-                <template #total-cell="{ row }">
-                  <span class="text-sm font-medium">
-                    {{ formatCents(
-                    (row.original as Order).totalCents,
-                    (row.original as Order).currency
-                  ) }}
-                  </span>
-                </template>
-
-                <!-- Status -->
-                <template #status-cell="{ row }">
-                  <UBadge
-                    :color="statusConfig[(row.original as Order).status]?.color ?? 'neutral'"
-                    variant="subtle"
-                    size="sm"
-                  >
-                    {{ statusConfig[(row.original as Order).status]?.label ?? (row.original as Order).status }}
-                  </UBadge>
-                </template>
-
-                <!-- Actions -->
-                <template #actions-cell="{ row }">
-                  <div class="flex items-center justify-end gap-1">
-                    <!-- Finalize — only for ERROR status -->
-                    <UButton
-                      v-if="(row.original as Order).status === 'ERROR'"
-                      variant="soft"
-                      size="xs"
-                      color="warning"
-                      icon="i-lucide-zap"
-                      :loading="finalizeLoading"
-                      @click="handleFinalize(row.original as Order)"
-                    >
-                      {{ t('orders.finalize', 'Finaliser') }}
-                    </UButton>
-
-                    <!-- Detail -->
-                    <UButton
-                      variant="ghost"
-                      size="xs"
-                      icon="i-lucide-eye"
-                      color="neutral"
-                      @click="openDetail(row.original as Order)"
-                    />
-                  </div>
-                </template>
-
-              </UTable>
-            </div>
-          </UCard>
-        </section>
-
-      </template>
+    <!-- ── Loading ────────────────────────────────────────── -->
+    <div v-if="pending" class="flex justify-center py-20">
+      <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-muted" />
     </div>
-  </UContainer>
 
-  <!-- ── Order detail modal ─────────────────────────────── -->
-  <UModal
-    v-model:open="detailOpen"
-    :title="t('orders.detail_title', 'Détail de la commande') + ` #${selectedOrder?.id}`"
-    size="lg"
-  >
-    <template #body>
-      <div v-if="selectedOrder" class="space-y-4">
+    <template v-else>
 
-        <!-- Customer info -->
-        <div class="rounded-lg border border-default bg-muted/20 px-4 py-3 space-y-1">
-          <p class="text-sm font-medium text-highlighted">
-            {{ selectedOrder.customer.firstName }} {{ selectedOrder.customer.lastName }}
-          </p>
-          <p class="text-xs text-muted">{{ selectedOrder.customer.email }}</p>
-          <p v-if="selectedOrder.customer.phone" class="text-xs text-muted">
-            {{ selectedOrder.customer.phone }}
-          </p>
-        </div>
+      <!-- ── Complétude ──────────────────────────────────── -->
+      <EventsDashboardCompletenessBar :fields="completenessFields" />
 
-        <!-- Order meta -->
-        <div class="grid grid-cols-3 gap-3">
-          <div class="rounded-lg border border-default bg-muted/20 px-3 py-2 text-center">
-            <p class="text-xs text-muted">{{ t('orders.col_date', 'Date') }}</p>
-            <p class="text-xs font-medium text-highlighted mt-0.5">
-              {{ formatDate(selectedOrder.createdAt) }}
-            </p>
+      <!-- ── Form ────────────────────────────────────────── -->
+      <UCard class="overflow-hidden">
+        <UForm ref="form" :schema="schema" :state="state" class="space-y-6">
+
+          <!-- Title + Categories -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
+            <UFormField
+              :label="t('events.stepper.info.title_label', 'Titre')"
+              name="title"
+              class="sm:col-span-3"
+            >
+              <template #hint>
+                <span
+                  :class="titleNearLimit ? 'text-warning' : 'text-muted'"
+                  class="text-xs tabular-nums"
+                >
+                  {{ titleLength }}/{{ TITLE_MAX }}
+                </span>
+              </template>
+              <UInput
+                v-model="state.title"
+                :placeholder="t('events.stepper.info.title_placeholder', 'Ex : Festival Jazz au Parc')"
+                :maxlength="TITLE_MAX"
+                leading-icon="i-lucide-type"
+                size="lg"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              :label="t('events.stepper.info.categories_label', 'Catégories')"
+              name="selectedCategories"
+              class="sm:col-span-2"
+            >
+              <template #hint>
+                <span v-if="state.selectedCategories.length" class="text-xs text-muted">
+                  {{ state.selectedCategories.length }} sélectionnée(s)
+                </span>
+              </template>
+              <USelectMenu
+                v-model="state.selectedCategories"
+                :items="categoryOptions"
+                :placeholder="t('events.stepper.info.categories_placeholder', 'Sélectionnez des catégories')"
+                leading-icon="i-lucide-tag"
+                value-key="value"
+                size="lg"
+                multiple
+                class="w-full"
+              />
+            </UFormField>
           </div>
-          <div class="rounded-lg border border-default bg-muted/20 px-3 py-2 text-center">
-            <p class="text-xs text-muted">{{ t('orders.col_total', 'Montant') }}</p>
-            <p class="text-sm font-semibold text-highlighted mt-0.5">
-              {{ formatCents(selectedOrder.totalCents, selectedOrder.currency) }}
-            </p>
-          </div>
-          <div class="rounded-lg border border-default bg-muted/20 px-3 py-2 text-center">
-            <p class="text-xs text-muted">{{ t('orders.col_status', 'Statut') }}</p>
-            <div class="flex justify-center mt-1">
-              <UBadge
-                :color="statusConfig[selectedOrder.status]?.color ?? 'neutral'"
-                variant="subtle"
-                size="sm"
+
+          <!-- Description -->
+          <UFormField
+            :label="t('events.stepper.info.desc_label', 'Description')"
+            name="description"
+          >
+            <div
+              class="overflow-hidden rounded-lg border border-default transition
+                     focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
+            >
+              <UEditor
+                v-slot="{ editor }"
+                v-model="state.description"
+                :placeholder="t('events.stepper.info.desc_placeholder', 'Décrivez votre événement…')"
+                :extensions="editorExtensions"
+                content-type="markdown"
+                class="w-full min-h-48"
               >
-                {{ statusConfig[selectedOrder.status]?.label ?? selectedOrder.status }}
+                <UEditorToolbar
+                  :editor="editor"
+                  :items="items"
+                  size="md"
+                  class="w-full border-b border-default bg-muted/40 px-1"
+                />
+              </UEditor>
+            </div>
+          </UFormField>
+
+        </UForm>
+      </UCard>
+
+      <!-- ── Cover image ─────────────────────────────────── -->
+      <UCard class="overflow-hidden">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-highlighted">
+                {{ t('events.stepper.info.upload_label', 'Image de couverture') }}
+              </h2>
+              <p class="mt-0.5 text-xs text-muted">JPG, PNG, WEBP — max 5 Mo</p>
+            </div>
+            <UButton
+              v-if="displayCover"
+              variant="ghost"
+              size="xs"
+              icon="i-lucide-trash-2"
+              color="error"
+              @click="removeCover"
+            >
+              {{ t('common.delete', 'Supprimer') }}
+            </UButton>
+          </div>
+        </template>
+
+        <!-- Preview -->
+        <div v-if="displayCover" class="space-y-3">
+          <div class="relative h-52 w-full overflow-hidden rounded-lg bg-muted/30">
+            <img
+              :src="displayCover"
+              alt="Image de couverture"
+              class="h-full w-full object-cover"
+            />
+            <div class="absolute bottom-2 left-2">
+              <UBadge color="success" variant="solid" size="xs">
+                <UIcon name="i-lucide-star" class="mr-1 size-3" />
+                {{ t('events.stepper.info.cover', 'Couverture') }}
+              </UBadge>
+            </div>
+            <!-- New file indicator -->
+            <div v-if="coverFile" class="absolute top-2 right-2">
+              <UBadge color="info" variant="solid" size="xs">
+                <UIcon name="i-lucide-sparkles" class="mr-1 size-3" />
+                {{ t('events.stepper.info.new_file', 'Nouvelle image') }}
               </UBadge>
             </div>
           </div>
-        </div>
 
-        <!-- Items -->
-        <div>
-          <p class="text-xs font-medium text-muted mb-2">
-            {{ t('orders.items_title', 'Billets commandés') }}
-          </p>
-          <ul class="space-y-2">
-            <li
-              v-for="item in selectedOrder.items"
-              :key="item.id"
-              class="flex items-center justify-between rounded-lg border border-default px-3 py-2"
-            >
-              <div>
-                <p class="text-sm font-medium text-highlighted">{{ item.ticketType.name }}</p>
-                <p class="text-xs text-muted">
-                  {{ t('orders.item_qty', 'Quantité') }} : {{ item.quantity }}
-                </p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-medium text-highlighted">
-                  {{ formatCents(item.unitPriceCents * item.quantity, item.currency) }}
-                </p>
-                <p class="text-xs text-muted">
-                  {{ formatCents(item.unitPriceCents, item.currency) }} / unité
-                </p>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Finalize button (if error) -->
-        <div v-if="selectedOrder.status === 'ERROR'">
           <UButton
-            color="warning"
-            variant="soft"
-            icon="i-lucide-zap"
+            variant="outline"
+            size="sm"
+            icon="i-lucide-image-plus"
             class="w-full"
-            :loading="finalizeLoading"
-            @click="handleFinalize(selectedOrder)"
+            @click="coverInput?.click()"
           >
-            {{ t('orders.finalize', 'Finaliser et envoyer les billets') }}
+            {{ t('events.stepper.info.upload_replace', 'Remplacer l\'image') }}
           </UButton>
         </div>
 
-      </div>
-    </template>
+        <!-- Drop zone -->
+        <div
+          v-else
+          class="flex flex-col items-center justify-center gap-3 rounded-lg border-2
+                 border-dashed p-10 text-center transition-colors duration-200 cursor-pointer"
+          :class="isCoverDragging
+            ? 'border-primary bg-primary/5'
+            : 'border-default hover:border-primary/50 hover:bg-muted/30'"
+          @click="coverInput?.click()"
+          @dragover.prevent="isCoverDragging = true"
+          @dragleave.prevent="isCoverDragging = false"
+          @drop.prevent="onCoverDrop"
+        >
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-full bg-muted/50 transition-colors"
+            :class="isCoverDragging ? 'bg-primary/10 text-primary' : 'text-muted'"
+          >
+            <UIcon name="i-lucide-upload-cloud" class="size-6" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-highlighted">
+              {{ t('events.stepper.info.upload_cta', 'Glissez votre image ici') }}
+            </p>
+            <p class="mt-0.5 text-xs text-muted">
+              {{ t('events.stepper.info.upload_or', 'ou cliquez pour parcourir') }}
+            </p>
+          </div>
+        </div>
 
-    <template #footer>
-      <div class="flex justify-end">
-        <UButton variant="outline" color="neutral" @click="detailOpen = false">
-          {{ t('common.cancel', 'Fermer') }}
-        </UButton>
-      </div>
+        <!-- Error -->
+        <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0">
+          <p v-if="coverError" class="mt-2 flex items-center gap-1.5 text-xs text-error">
+            <UIcon name="i-lucide-alert-circle" class="size-3.5" />
+            {{ coverError }}
+          </p>
+        </Transition>
+
+        <input
+          ref="coverInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+          @change="onCoverInputChange"
+        />
+      </UCard>
+
+      <!-- ── Quick links ─────────────────────────────────── -->
+      <EventsDashboardQuickLinks
+        :event-id="eventId"
+        :current="`/events/${eventId}`"
+      />
+
     </template>
-  </UModal>
+  </div>
 </template>

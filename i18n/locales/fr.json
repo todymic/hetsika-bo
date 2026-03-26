@@ -7,7 +7,8 @@
     "cancel": "Annuler",
     "error": "Erreur",
     "delete": "Supprimer",
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "show": "Visualiser"
   },
 
   "sidebar": {
@@ -57,7 +58,8 @@
       "empty": "Aucun évènement disponible",
       "loading_more": "Chargement des événements...",
       "see_more": "Voir d'autres événements",
-      "all_loaded": "Tous les événements sont affichés ({count})"
+      "all_loaded": "Tous les événements sont affichés ({count})",
+      "show": "Visualiser"
     },
 
     "create": {
@@ -156,9 +158,6 @@
         "remove": {
           "success": "Type de billet supprimé"
         }
-
-
-
       },
 
       "dates": {
