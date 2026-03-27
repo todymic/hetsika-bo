@@ -7,7 +7,7 @@ export  interface Event {
   description?: string,
   startAt: Date,
   endAt?: Date | null,
-  status: EventStatus,
+  status?: EventStatus,
   address?: Address,
   organizer: Organizer,
   categories: Category[],
@@ -16,7 +16,7 @@ export  interface Event {
   deletedAt?: Date
   deletedBy?: number
   isDeleted?: boolean
-  ticketTypes: TicketType[]
+  ticketTypes?: TicketType[]
 }
 
 export interface Address {
@@ -25,6 +25,7 @@ export interface Address {
   zipcode: string,
   countryCode: string,
   placeId?: number | null
+  source: 'google' | 'manual',
 }
 
 export interface Organizer {

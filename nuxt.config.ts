@@ -9,7 +9,8 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 export default defineNuxtConfig({
  runtimeConfig: {
    public: {
-     apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://localhost:8000/api/v1'
+     apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://localhost:8000/api/v1',
+     googleMapsKey: process.env.GOOGLE_MAPS_API_KEY
    }
  },
   modules: ['@nuxt/eslint', '@nuxt/ui', '@vueuse/nuxt', '@pinia/nuxt', '@nuxtjs/i18n', '@nuxt/icon'],

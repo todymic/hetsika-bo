@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^25.3.5",
     "eslint": "^10.0.2",
     "typescript": "^5.9.3",

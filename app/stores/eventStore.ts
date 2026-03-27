@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import type {Event, EventSalesStats, GlobalStats, Order} from "~/types/model";
+import type {Address, Event, EventSalesStats, GlobalStats, Order} from "~/types/model";
 import {useApi} from "~/composables/useApi";
 import {useAuthStore} from "~/stores/authStore";
 
@@ -56,6 +56,10 @@ export const useEventStore = defineStore('event', () => {
     return await put<EventResponse>(`/organizer/events/${id}`, form)
   }
 
+  const updateEventAddress = async (id: number, address: Address): Promise<EventResponse> => {
+    return await patch<EventResponse>(`/organizer/events/${id}/address`, {address})
+  }
+
   const deleteEvent = async (id: number) => {
     return await del(`/organizer/events/${id}`)
   }
@@ -69,8 +73,8 @@ export const useEventStore = defineStore('event', () => {
     return response.event;
   }
 
-  const updateStatus = async (id: number, status: string) => {
-    return await patch(`/organizer/events/${id}/status`, {status})
+  const updateStatus = async (id: number, status: string): Promise<EventResponse> => {
+    return await patch<EventResponse>(`/organizer/events/${id}/status`, {status})
   }
 
   const getGlobalStats = async (): Promise<GlobalStats> => {
@@ -87,6 +91,11 @@ export const useEventStore = defineStore('event', () => {
   const finalizeOrder = async (orderId: number): Promise<void> =>
     await post(`/api/orders/${orderId}/finalize`,{})
 
+  const publishEvent = async (id: number, isPublish: boolean): Promise<boolean> => {
+    const response =  await updateStatus(id, isPublish ? 'published' : 'draft')
+    return response.status === 'success';
+  }
+
   return {
     getEvents,
     createEvent,
@@ -97,7 +106,8 @@ export const useEventStore = defineStore('event', () => {
     getGlobalStats,
     finalizeOrder,
     getEventOrders,
-    getEventStats
+    getEventStats,
+    publishEvent,
 
   }
 });
