@@ -19,7 +19,7 @@
   "events": {
     "dashboard": {
       "menu": {
-        "tickets": "Définissez les billets disponibles"
+        "tickets": "Types de billets"
       }
     },
     "sections": {

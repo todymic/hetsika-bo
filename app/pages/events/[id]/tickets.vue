@@ -105,7 +105,7 @@ async function removeTicket(ticket: TicketType) {
 
     <div class="flex items-center justify-between gap-3">
       <h1 class="text-base font-semibold text-highlighted sm:text-lg">
-        {{ t('events.dashboard.menu.tickets') }}
+        {{ t('events.dashboard.menu.tickets', "Tickets") }}
       </h1>
       <UButton icon="i-lucide-plus" size="sm" @click="openCreate">
         <span class="hidden sm:inline">{{ t('tickets.add', 'Ajouter un billet') }}</span>
