@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="events" title="Events">
     <template #header>
-      <UDashboardNavbar :title="t('events.header.title')" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar v-if="!eventId" :title="t('events.header.title')" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -14,4 +14,6 @@
 </template>
 <script setup lang="ts">
 const { t } = useI18n()
+const route       = useRoute()
+const eventId     = computed(() => Number(route.params.id))
 </script>

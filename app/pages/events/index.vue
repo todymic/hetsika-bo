@@ -337,7 +337,7 @@ const cancelEvent = async (id: number) => {
                              size="md"
                              :icon="isDesktop ? '': 'i-lucide-eye'"
                              :variant="isDesktop ? 'solid': 'ghost'"
-                             :color="info"
+                             :color="primery"
                              :to="`/events/${event.id}`">
                       {{ isDesktop ? t('common.show') : ""}}
                     </UButton>

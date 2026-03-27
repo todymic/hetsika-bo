@@ -258,7 +258,7 @@ async function save() {
     <template v-else>
       <EventsDashboardCompletenessBar :fields="completenessFields" />
 
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-5">
+      <div class="flex flex-col gap-5 lg:grid lg:grid-cols-5">
 
         <!-- ── Formulaire dates (3/5) ─────────────────── -->
         <div class="space-y-5 lg:col-span-3">

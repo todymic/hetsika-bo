@@ -2,6 +2,7 @@
 import { useEventStore } from '~/stores/eventStore'
 
 const props  = defineProps<{ eventId: number }>()
+const emit   = defineEmits<{ close: [] }>()
 const { t }  = useI18n()
 const route  = useRoute()
 const toast  = useToast()
@@ -52,13 +53,13 @@ async function handleDelete() {
 
 const navSections = computed(() => [
   {
-    label: t('events.dashboard.section.content', 'Contenu'),
+    label: t('events.dashboard.section.content', 'Configurations'),
     items: [
-      { label: t('events.dashboard.menu.info',         'Informations'),     icon: 'i-lucide-badge-info',       to: `/events/${props.eventId}`               },
-      { label: t('events.dashboard.menu.localisation', 'Localisation'),     icon: 'i-lucide-map-pin',          to: `/events/${props.eventId}/localisation`   },
-      { label: t('events.dashboard.menu.dates',        'Dates'),            icon: 'i-lucide-calendar-days',    to: `/events/${props.eventId}/dates`          },
-      { label: t('events.dashboard.menu.tickets',      'Types de billets'), icon: 'i-lucide-ticket',           to: `/events/${props.eventId}/tickets`        },
-      { label: t('events.dashboard.menu.seating',      'Plan de salle'),    icon: 'i-lucide-layout-dashboard', to: `/events/${props.eventId}/seating`        },
+      { label: t('events.dashboard.menu.info',         'Informations'),     icon: 'i-lucide-badge-info',       to: `/events/${props.eventId}`              },
+      { label: t('events.dashboard.menu.localisation', 'Localisation'),     icon: 'i-lucide-map-pin',          to: `/events/${props.eventId}/localisation`  },
+      { label: t('events.dashboard.menu.dates',        'Dates'),            icon: 'i-lucide-calendar-days',    to: `/events/${props.eventId}/dates`         },
+      { label: t('events.dashboard.menu.tickets',      'Types de billets'), icon: 'i-lucide-ticket',           to: `/events/${props.eventId}/tickets`       },
+      { label: t('events.dashboard.menu.seating',      'Plan de salle'),    icon: 'i-lucide-layout-dashboard', to: `/events/${props.eventId}/seating`       },
     ],
   },
   {
@@ -76,31 +77,46 @@ const navSections = computed(() => [
   },
 ])
 
-function isActive(path: string) {
-  return route.path === path
-}
+function isActive(path: string) { return route.path === path }
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'short', year: 'numeric' })
     .format(new Date(iso))
 }
+
+function handleNavClick() {
+  // Close sidebar on mobile after navigation
+  emit('close')
+}
 </script>
 
 <template>
   <aside
-    class="flex flex-col border-r border-default bg-background"
-    style="width:260px;flex-shrink:0;overflow:hidden"
+    class="flex h-full flex-col border-r border-default bg-background"
+    style="width:260px;flex-shrink:0"
   >
 
     <!-- ── Event header ─────────────────────────────────── -->
     <div class="border-b border-default p-4">
-      <NuxtLink
-        to="/events"
-        class="mb-3 flex items-center gap-1.5 text-xs text-muted hover:text-highlighted transition-colors"
-      >
-        <UIcon name="i-lucide-arrow-left" class="size-3" />
-        {{ t('events.dashboard.back', 'Tous les événements') }}
-      </NuxtLink>
+
+      <!-- Mobile close button -->
+      <div class="mb-3 flex items-center justify-between lg:block">
+        <NuxtLink
+          to="/events"
+          class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted transition-colors"
+          @click="handleNavClick"
+        >
+          <UIcon name="i-lucide-arrow-left" class="size-3" />
+          {{ t('events.dashboard.back', 'Tous les événements') }}
+        </NuxtLink>
+        <UButton
+          variant="ghost"
+          size="xs"
+          icon="i-lucide-x"
+          class="lg:hidden"
+          @click="emit('close')"
+        />
+      </div>
 
       <!-- Cover -->
       <div class="mb-3 h-24 w-full overflow-hidden rounded-lg bg-muted/30">
@@ -128,12 +144,14 @@ function formatDate(iso: string) {
         <p class="mt-1 text-xs text-muted">{{ formatDate(event.startAt) }}</p>
 
         <!-- Status pill -->
-        <div class="mt-2.5 flex items-center gap-2 rounded-lg px-3 py-1.5"
-             :class="{
-               'bg-warning/10': !isPublished && event.status !== 'CANCELLED',
-               'bg-success/10': isPublished,
-               'bg-error/10':   event.status === 'CANCELLED',
-             }">
+        <div
+          class="mt-2.5 flex items-center gap-2 rounded-lg px-3 py-1.5"
+          :class="{
+            'bg-warning/10': !isPublished && event.status !== 'CANCELLED',
+            'bg-success/10': isPublished,
+            'bg-error/10':   event.status === 'CANCELLED',
+          }"
+        >
           <div
             class="h-2 w-2 rounded-full"
             :class="{
@@ -158,7 +176,7 @@ function formatDate(iso: string) {
         <UButton
           :icon="isPublished ? 'i-lucide-eye-off' : 'i-lucide-send'"
           size="sm"
-          :color="isPublished ? 'neutral' : 'primary'"
+          :color="isPublished ? 'info' : 'primary'"
           :variant="isPublished ? 'outline' : 'solid'"
           :loading="publishLoading"
           class="mt-2 w-full"
@@ -178,8 +196,10 @@ function formatDate(iso: string) {
         :key="section.label"
         class="space-y-0.5"
       >
-        <p class="mb-1.5 px-2.5 text-xs font-medium uppercase tracking-wider text-muted"
-           style="font-size:11px;letter-spacing:.07em">
+        <p
+          class="mb-1.5 px-2.5 font-medium uppercase tracking-wider text-muted"
+          style="font-size:11px;letter-spacing:.07em"
+        >
           {{ section.label }}
         </p>
 
@@ -190,7 +210,8 @@ function formatDate(iso: string) {
           class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors"
           :class="isActive(item.to)
             ? 'bg-primary/10 text-primary font-medium'
-            : 'text-secondary hover:bg-muted/40 hover:text-highlighted'"
+            : 'hover:bg-muted/40 hover:text-primary text-highlighted'"
+          @click="handleNavClick"
         >
           <UIcon :name="item.icon" class="size-4 shrink-0" />
           <span class="flex-1 truncate">{{ item.label }}</span>
@@ -226,7 +247,7 @@ function formatDate(iso: string) {
   >
     <template #body>
       <p class="text-sm text-muted">
-        {{ t('events.list.delete_confirm_body', 'Cette action est irréversible. L\'événement sera définitivement supprimé.') }}
+        {{ t('events.list.delete_confirm_body', 'Cette action est irréversible.') }}
       </p>
     </template>
     <template #footer>

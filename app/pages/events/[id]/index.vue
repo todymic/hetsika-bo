@@ -190,21 +190,18 @@ async function save() {
       <EventsDashboardCompletenessBar :fields="completenessFields" />
 
       <!-- ── Layout 2 colonnes ───────────────────────────── -->
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-5">
+      <div class="flex flex-col gap-5 lg:grid lg:grid-cols-5">
 
         <!-- Colonne principale (3/5) -->
         <div class="space-y-5 lg:col-span-3">
           <UCard>
             <UForm ref="form" :schema="schema" :state="state" class="space-y-6">
 
-              <!-- Title + Categories -->
+              <!-- Title + Categories : empilés sur mobile -->
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
-                <UFormField
-                  :label="t('events.stepper.info.title_label', 'Titre')"
-                  name="title"
-                  class="sm:col-span-3"
-                >
-                  <template #hint>
+                <UFormField :label="t('events.stepper.info.title_label')" name="title" class="sm:col-span-3">
+
+                <template #hint>
                     <span
                       :class="titleNearLimit ? 'text-warning' : 'text-muted'"
                       class="text-xs tabular-nums"
@@ -276,7 +273,6 @@ async function save() {
 
         <!-- Colonne latérale (2/5) -->
         <div class="space-y-5 lg:col-span-2">
-
           <!-- ── Cover image ─────────────────────────────── -->
           <UCard class="overflow-hidden">
             <template #header>
