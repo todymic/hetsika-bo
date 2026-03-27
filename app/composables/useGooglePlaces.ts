@@ -18,7 +18,7 @@ export function useGooglePlaces() {
     try {
       const res = await new Promise<any[]>((resolve, reject) => {
         autocompleteService.getPlacePredictions(
-          { input: query, types: ['address'] },
+          { input: query },
           (r: any, s: any) => {
             if (s === 'OK' && r) resolve(r)
             else reject(s)
