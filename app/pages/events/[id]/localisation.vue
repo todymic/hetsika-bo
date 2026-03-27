@@ -214,7 +214,7 @@ function hideSuggestions() {
                   <div
                     v-if="suggestions.length && showSuggestions"
                     class="absolute left-0 right-0 top-full mt-1 overflow-hidden
-               rounded-lg border border-default bg-background shadow-xl z-50 bg-white"
+               rounded-lg border border-default bg-background shadow-xl z-50 bg-default"
                   >
                     <button
                       v-for="s in suggestions"

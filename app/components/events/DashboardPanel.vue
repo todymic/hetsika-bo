@@ -91,30 +91,29 @@ function handleNavClick() {
 </script>
 
 <template>
-  <aside
-    class="flex h-full flex-col border-r border-default bg-background"
-    style="width:260px;flex-shrink:0"
-  >
+  <aside class="flex h-full w-full flex-col border-r border-default bg-background overflow-hidden">
 
-    <!-- ── Event header ─────────────────────────────────── -->
+
+  <!-- ── Event header ─────────────────────────────────── -->
     <div class="border-b border-default p-4">
 
       <!-- Mobile close button -->
-      <div class="mb-3 flex items-center justify-between lg:block">
+      <div class="flex items-center justify-between mb-3">
         <NuxtLink
           to="/events"
           class="flex items-center gap-1.5 text-xs text-muted hover:text-highlighted transition-colors"
-          @click="handleNavClick"
         >
           <UIcon name="i-lucide-arrow-left" class="size-3" />
           {{ t('events.dashboard.back', 'Tous les événements') }}
         </NuxtLink>
+
+        <!-- Bouton fermer mobile uniquement -->
         <UButton
           variant="ghost"
           size="xs"
           icon="i-lucide-x"
           class="lg:hidden"
-          @click="emit('close')"
+          @click="$emit('close')"
         />
       </div>
 
