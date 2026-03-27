@@ -70,7 +70,10 @@ watch(query, (val) => {
   if (mode.value === 'autocomplete') search(val)
 })
 
+const showSuggestions = ref(false)
+
 async function selectPlace(prediction: any) {
+  showSuggestions.value = false
   try {
     const details = await getDetails(prediction.place_id)
     state.value.placeId         = prediction.place_id
@@ -127,6 +130,13 @@ async function save() {
     saving.value = false
   }
 }
+
+
+// Dans le script
+function hideSuggestions() {
+  setTimeout(() => { showSuggestions.value = false }, 200)
+}
+
 </script>
 
 <template>
@@ -153,8 +163,13 @@ async function save() {
 
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-5">
 
-        <!-- ── Formulaire (3/5) ───────────────────────── -->
-        <UCard class="lg:col-span-3">
+        <UCard
+          class="lg:col-span-3"
+          :ui="{
+          root: 'overflow-visible',
+          body: 'overflow-visible',
+        }"
+              >
 
           <!-- Mode toggle -->
           <div class="mb-5 flex rounded-lg bg-muted/30 p-1 gap-1">
@@ -179,6 +194,7 @@ async function save() {
           <template v-if="mode === 'autocomplete'">
             <UFormField :label="t('events.localisation.search_label', 'Rechercher une adresse')">
               <div class="relative">
+                <!-- Dans le template -->
                 <UInput
                   v-model="query"
                   :loading="isLoading"
@@ -186,25 +202,27 @@ async function save() {
                   :placeholder="t('events.localisation.search_placeholder', 'Ex : Parc Municipal, Luxembourg…')"
                   size="lg"
                   class="w-full"
+                  @focus="showSuggestions = true"
+                  @blur="hideSuggestions"
                 />
 
-                <!-- Suggestions -->
                 <Transition
                   enter-active-class="transition duration-150 ease-out"
                   enter-from-class="opacity-0 -translate-y-1"
                   enter-to-class="opacity-100 translate-y-0"
                 >
                   <div
-                    v-if="suggestions.length"
-                    class="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden
-                           rounded-lg border border-default bg-background shadow-md"
+                    v-if="suggestions.length && showSuggestions"
+                    class="absolute left-0 right-0 top-full mt-1 overflow-hidden
+               rounded-lg border border-default bg-background shadow-xl"
+                    style="z-index: 9999; position: absolute;"
                   >
                     <button
                       v-for="s in suggestions"
                       :key="s.place_id"
                       class="flex w-full items-start gap-3 border-b border-default px-3 py-2.5
-                             text-left last:border-0 hover:bg-muted/30 transition-colors"
-                      @click="selectPlace(s)"
+                 text-left last:border-0 hover:bg-muted/30 transition-colors"
+                      @mousedown.prevent="selectPlace(s)"
                     >
                       <UIcon name="i-lucide-map-pin" class="mt-0.5 size-4 shrink-0 text-primary" />
                       <div>
