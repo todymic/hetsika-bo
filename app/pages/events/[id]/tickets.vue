@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { ColumnDef } from '@tanstack/vue-table'
-import type { TicketType } from '~/stores/eventForm'
-import { useEventStore } from '~/stores/eventStore'
+import type {TicketType} from "~/types/model";
+import {useTicketTypeStore} from "~/stores/ticketTypeStore";
 
 definePageMeta({ layout: 'event-dashboard' })
 
 const { t }                                              = useI18n()
 const route                                              = useRoute()
 const toast                                              = useToast()
-const { getEventTicketTypes, saveTicketType, deleteTicketType } = useEventStore()
+const { getList,createTicket, deleteOne, update } = useTicketTypeStore()
 const eventId                                            = Number(route.params.id)
 
 const pending = ref(true)
 const tickets = ref<TicketType[]>([])
 
 onMounted(async () => {
-  try   { tickets.value = await getEventTicketTypes(eventId) }
+  try   { tickets.value = await getList() }
   finally { pending.value = false }
 })
 
@@ -77,8 +77,8 @@ async function saveTicket() {
   saving.value = true
   try {
     const ticket: TicketType = { ...formState.value, ...result.data }
-    await saveTicketType(eventId, ticket)
-    tickets.value = await getEventTicketTypes(eventId)
+    await update(eventId, ticket)
+    tickets.value = await getList()
     toast.add({ title: isEditing.value ? t('tickets.updated', 'Billet mis à jour') : t('tickets.created', 'Billet créé'), color: 'success' })
     closeModal()
   } catch {
@@ -91,8 +91,8 @@ async function saveTicket() {
 async function removeTicket(ticket: TicketType) {
   if (!ticket.id) return
   try {
-    await deleteTicketType(ticket.id)
-    tickets.value = tickets.value.filter(t => t.id !== ticket.id)
+    await deleteOne(ticket.id)
+    tickets.value = tickets.value.filter((t: TicketType) => t.id !== ticket.id)
     toast.add({ title: t('tickets.deleted', 'Billet supprimé'), color: 'success' })
   } catch {
     toast.add({ title: t('common.error', 'Erreur'), color: 'error' })

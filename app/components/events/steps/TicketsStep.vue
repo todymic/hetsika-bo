@@ -140,9 +140,9 @@ async function validate(): Promise<boolean> {
 
 onMounted(() => {
   ticketTypeStore.getList()
-    .then(response => {
+    .then(tickets => {
       store.tickets = []
-      response.ticketTypes.forEach(t => store.addTicket(t))
+      tickets.forEach(t => store.addTicket(t))
     })
     .catch(err => toast.add({
       title:       t('tickets.get.error', 'Erreur'),

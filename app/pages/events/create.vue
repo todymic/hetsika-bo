@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useEventStore } from '~/stores/eventStore'
 
-const { t }            = useI18n()
-const store            = useEventFormStore()
-const router           = useRouter()
-const toast            = useToast()
-const { createEvent }  = useEventStore()
-const loading          = ref(false)
-
+const { t }           = useI18n()
+const store           = useEventFormStore()
+const router          = useRouter()
+const toast           = useToast()
+const { createEvent } = useEventStore()
+const loading         = ref(false)
 
 async function save(onSuccess: (id: number) => void) {
   loading.value = true
@@ -36,10 +35,8 @@ async function save(onSuccess: (id: number) => void) {
 async function submit() {
   loading.value = true
   try {
-
     const eventId = store.savedEventId
     if (!eventId) return
-
     store.reset()
     await router.push(`/events/${eventId}`)
   } catch (err: any) {
@@ -57,8 +54,8 @@ onUnmounted(() => store.reset())
 </script>
 
 <template>
-  <UContainer>
-    <div class="flex flex-col gap-8">
+  <UContainer >
+    <div class="flex flex-col gap-8 ">
 
       <!-- ── Title ──────────────────────────────────────── -->
       <section>
@@ -67,12 +64,27 @@ onUnmounted(() => store.reset())
         </h1>
       </section>
 
-      <EventsEventFormStepper
-        mode="create"
-        :loading="loading"
-        @save="save"
-        @submit="submit"
-      />
+      <!-- ── Layout : stepper (gauche) + résumé (droite) ── -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+        <!-- Stepper (2/3) -->
+        <div class="lg:col-span-2">
+          <EventsEventFormStepper
+            mode="create"
+            :loading="loading"
+            @save="save"
+            @submit="submit"
+          />
+        </div>
+
+        <!-- Résumé (1/3) -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-6">
+            <EventsCreateEventSummary />
+          </div>
+        </div>
+
+      </div>
 
     </div>
   </UContainer>

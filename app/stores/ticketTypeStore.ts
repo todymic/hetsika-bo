@@ -23,8 +23,9 @@ export const useTicketTypeStore = defineStore('ticketType', () => {
     return await post<TicketTypeResponse>(`/organizer/events/${eventId.value}/ticket-types`, ticketType)
   }
 
-  const getList= async (): Promise<TicketTypesResponse> => {
-    return await get<TicketTypesResponse>(`/organizer/events/${eventId.value}/ticket-types`)
+  const getList = async (): Promise<TicketType[]> => {
+    const response = await get<TicketTypesResponse>(`/organizer/events/${eventId.value}/ticket-types`)
+    return response.ticketTypes;
   }
 
   const getOne= async (id: number): Promise<TicketTypeResponse> => {

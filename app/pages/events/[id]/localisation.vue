@@ -106,6 +106,10 @@ onMounted(async () => {
       state.value.zipCode         = event.address.zipcode ?? ''
       state.value.selectedCountry = event.address.countryCode ?? ''
       state.value.placeName       = event.address.placeName ?? ''
+      state.value.lat       = event.address.lat ?? 0
+      state.value.lng       = event.address.lng ?? 0
+
+      mapCoords.value = { lat: event.address.lat ?? 0, lng: event.address.lng ?? 0 }
     }
     markSaved()
   } finally {

@@ -35,7 +35,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
   const info = ref({
     title:              '',
     description:        '',
-    selectedCategories: [] as number[],
+    selectedCategories: [] as string[],
     files:              [] as File[],
     uploadedFiles:      [] as UploadedFile[],
     existingFiles:      [] as Media[],
@@ -49,6 +49,9 @@ export const useEventFormStore = defineStore('eventForm', () => {
     city:            '',
     zipCode:         '',
     selectedCountry: '',
+    lat: 0,
+    lng: 0,
+    placeName: ''
   })
 
   // ── Date step ─────────────────────────────────────────────
@@ -87,6 +90,9 @@ export const useEventFormStore = defineStore('eventForm', () => {
         city:        address.value.city,
         zipcode:     address.value.zipCode,
         countryCode: address.value.selectedCountry,
+        lat:         address.value.lat,
+        lng:         address.value.lng,
+        placeName:   address.value.placeName,
       },
       removedFileIds: info.value.removedFileIds,
       ticketTypes: tickets.value,
@@ -103,7 +109,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
     info.value = {
       title:              event.title as string,
       description:        event.description ?? '',
-      selectedCategories: event.categories.map(c => c.id),
+      selectedCategories: event.categories.map(c => c.id + ''),
       files:              [],
       uploadedFiles:      [],
       existingFiles:      event.medias ?? [],
@@ -116,6 +122,9 @@ export const useEventFormStore = defineStore('eventForm', () => {
       city:            eventAddress.city,
       zipCode:         eventAddress.zipcode,
       selectedCountry: eventAddress.countryCode,
+      lat: eventAddress.lat!,
+      lng: eventAddress.lng!,
+      placeName: eventAddress.placeName!
     }
 
     const hasEnd = !!event.endAt
@@ -149,7 +158,7 @@ export const useEventFormStore = defineStore('eventForm', () => {
       existingFiles: [],
       removedFileIds: [],
     }
-    address.value = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '' }
+    address.value = { street: '', complement: '', city: '', zipCode: '', selectedCountry: '', lat: 0, lng: 0, placeName: '' }
     dates.value   = { startDate: undefined, startTime: '', endDate: undefined, endTime: '', hasEndDate: false }
 
     tickets.value = []

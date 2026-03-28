@@ -213,5 +213,26 @@
     "col_qty": "Quantité",
     "col_status": "Statut",
     "name_placeholder": "Ex : VIP, Standard…"
+  },
+  "gallery": {
+    "title": "Gestion des images",
+    "subtitle": "Choisissez une couverture ou téléversez de nouvelles images",
+    "tab_gallery": "Galerie",
+    "tab_upload": "Téléverser",
+    "empty": "Aucune image dans la galerie",
+    "upload_cta": "Téléverser une image",
+    "badge_cover": "Couverture",
+    "badge_selected": "Sélectionnée",
+    "delete": "Supprimer",
+    "upload_zone_label": "Glissez vos images ici ou",
+    "upload_zone_browse": "parcourir",
+    "upload_zone_hint": "JPG, PNG, WEBP — max 5 Mo par fichier",
+    "queue_title": "Images à téléverser ({count})",
+    "save_to_gallery": "Sauvegarder dans la galerie",
+    "set_as_cover": "Définir comme couverture",
+    "cancel": "Annuler",
+    "hint_cover_selected": "Image sélectionnée comme couverture",
+    "confirm_cover": "Définir comme couverture",
+    "upload_btn": "Téléverser ({count})"
   }
 }

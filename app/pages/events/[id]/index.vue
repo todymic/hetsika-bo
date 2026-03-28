@@ -5,22 +5,22 @@ import type { SelectItem } from '#ui/components/Select.vue'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import { useEventStore } from '~/stores/eventStore'
-import {useFileUpload} from "~/composables/useFileUpload";
+import ImageGalleryModal from '~/components/ImageGalleryModal.vue'
 
 definePageMeta({ layout: 'event-dashboard' })
 
-const { t }                         = useI18n()
-const route                         = useRoute()
-const toast                         = useToast()
+const { t }                     = useI18n()
+const route                     = useRoute()
+const toast                     = useToast()
 const { getEvent, updateEvent } = useEventStore()
-const { getCategories }             = useCategoryStore()
-const eventId                       = Number(route.params.id)
+const { getCategories }         = useCategoryStore()
+const eventId                   = Number(route.params.id)
 
 // ── State ──────────────────────────────────────────────────
-const pending  = ref(true)
-const saving   = ref(false)
-const form     = useTemplateRef('form')
-const event    = ref<any>(null)
+const pending = ref(true)
+const saving  = ref(false)
+const form    = useTemplateRef('form')
+const event   = ref<any>(null)
 
 const state = ref({
   title:              '',
@@ -43,7 +43,7 @@ const schema = z.object({
 
 // ── Unsaved changes ────────────────────────────────────────
 const isDirty = computed(() => JSON.stringify(state.value) !== original.value)
-function markSaved() { original.value = JSON.stringify(state.value) }
+function markSaved()    { original.value = JSON.stringify(state.value) }
 function cancelChanges() { state.value = JSON.parse(original.value) }
 
 onBeforeRouteLeave(() => {
@@ -51,23 +51,11 @@ onBeforeRouteLeave(() => {
   return window.confirm(t('common.unsaved_confirm', 'Vous avez des modifications non enregistrées. Quitter quand même ?'))
 })
 
-// ── Cover image ────────────────────────────────────────────
-const coverInput   = useTemplateRef('coverInput')
-const coverRemoved = ref(false)
-
-const {
-  isDragging:        isCoverDragging,
-  fileError:         coverError,
-  uploadedFiles,
-  currentFile:       coverFile,
-  removeFile:        removeCoverFile,
-  setExistingFiles,
-  onFileInputChange: onCoverInputChange,
-  onDrop:            onCoverDrop,
-  MAX_SIZE_MB
-} = useFileUpload()
-
-const coverPreview = computed(() => coverFile.value?.preview ?? null)
+// ── Gallery modal ──────────────────────────────────────────
+const showGalleryModal = ref(false)
+const coverRemoved     = ref(false)
+const newCoverFile     = ref<File | null>(null)
+const newCoverPreview  = ref<string | null>(null)
 
 const existingCover = computed(() =>
   !coverRemoved.value
@@ -75,11 +63,39 @@ const existingCover = computed(() =>
     : null
 )
 
-const displayCover = computed(() => coverPreview.value ?? existingCover.value?.url ?? null)
+const displayCover = computed(() => newCoverPreview.value ?? existingCover.value?.url ?? null)
 
 function removeCover() {
-  if (coverFile.value) removeCoverFile(coverFile.value.id)
-  coverRemoved.value = true
+  newCoverFile.value    = null
+  newCoverPreview.value = null
+  coverRemoved.value    = true
+}
+
+function onCoverChanged(img: any) {
+  // L'utilisateur a choisi une image existante comme couverture
+  newCoverFile.value    = null
+  newCoverPreview.value = img.url
+  coverRemoved.value    = false
+  // Met à jour la liste des medias pour refléter la nouvelle couverture
+  if (event.value?.medias) {
+    event.value.medias = event.value.medias.map((m: any) => ({
+      ...m,
+      isCover: m.id === img.id,
+    }))
+  }
+}
+
+function onFilesUploaded(files: File[]) {
+  // Prend le premier fichier uploadé comme couverture candidate
+  const file = files[0]
+  if (!file) return
+  newCoverFile.value = file
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    newCoverPreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+  coverRemoved.value = false
 }
 
 // ── Complétude ─────────────────────────────────────────────
@@ -97,16 +113,16 @@ const editorExtensions = [
 ]
 
 const items: EditorToolbarItem[] = [
-  { kind: 'bold',       label: 'bold',   icon: 'i-lucide-bold'         },
-  { kind: 'mark',       mark: 'italic',  icon: 'i-lucide-italic'       },
-  { kind: 'heading',    level: 1,        icon: 'i-lucide-heading-1'    },
-  { kind: 'heading',    level: 2,        icon: 'i-lucide-heading-2'    },
-  { kind: 'textAlign',  align: 'left',   icon: 'i-lucide-align-left'   },
-  { kind: 'textAlign',  align: 'center', icon: 'i-lucide-align-center' },
-  { kind: 'bulletList',                  icon: 'i-lucide-list'         },
-  { kind: 'orderedList',                 icon: 'i-lucide-list-ordered' },
-  { kind: 'blockquote',                  icon: 'i-lucide-quote'        },
-  { kind: 'link',                        icon: 'i-lucide-link'         },
+  { kind: 'bold',        label: 'bold',   icon: 'i-lucide-bold'         },
+  { kind: 'mark',        mark: 'italic',  icon: 'i-lucide-italic'       },
+  { kind: 'heading',     level: 1,        icon: 'i-lucide-heading-1'    },
+  { kind: 'heading',     level: 2,        icon: 'i-lucide-heading-2'    },
+  { kind: 'textAlign',   align: 'left',   icon: 'i-lucide-align-left'   },
+  { kind: 'textAlign',   align: 'center', icon: 'i-lucide-align-center' },
+  { kind: 'bulletList',                   icon: 'i-lucide-list'         },
+  { kind: 'orderedList',                  icon: 'i-lucide-list-ordered' },
+  { kind: 'blockquote',                   icon: 'i-lucide-quote'        },
+  { kind: 'link',                         icon: 'i-lucide-link'         },
 ]
 
 function formatDate(iso: string) {
@@ -127,7 +143,6 @@ onMounted(async () => {
     state.value.description        = evt.description ?? ''
     state.value.selectedCategories = evt.categories.map((c: any) => String(c.id))
     categoryOptions.value          = categories.map((c: any) => ({ label: c.name, value: String(c.id) }))
-    setExistingFiles(evt.medias ?? [])
     markSaved()
   } finally {
     pending.value = false
@@ -143,6 +158,7 @@ async function save() {
   saving.value = true
   try {
     const formData = new FormData()
+    formData.append('step', 'INFO')
     formData.append('event', JSON.stringify({
       title:       state.value.title,
       description: state.value.description,
@@ -151,8 +167,9 @@ async function save() {
         ? { removedFileIds: [existingCover.value.id] }
         : {}),
     }))
-    const newCoverFile = uploadedFiles.value[0]?.file
-    if (newCoverFile) formData.append('files[]', newCoverFile)
+    if (newCoverFile.value) {
+      formData.append('files[]', newCoverFile.value)
+    }
 
     await updateEvent(eventId, formData)
     markSaved()
@@ -195,13 +212,12 @@ async function save() {
         <!-- Colonne principale (3/5) -->
         <div class="space-y-5 lg:col-span-3">
           <UCard>
-            <UForm ref="form" :schema="schema" :state="state" class="space-y-6">
+            <UForm ref="form" :schema="schema" :state="state" class="space-y-6 ">
 
-              <!-- Title + Categories : empilés sur mobile -->
+              <!-- Title + Categories -->
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
                 <UFormField :label="t('events.stepper.info.title_label')" name="title" class="sm:col-span-3">
-
-                <template #hint>
+                  <template #hint>
                     <span
                       :class="titleNearLimit ? 'text-warning' : 'text-muted'"
                       class="text-xs tabular-nums"
@@ -273,6 +289,7 @@ async function save() {
 
         <!-- Colonne latérale (2/5) -->
         <div class="space-y-5 lg:col-span-2">
+
           <!-- ── Cover image ─────────────────────────────── -->
           <UCard class="overflow-hidden">
             <template #header>
@@ -281,7 +298,7 @@ async function save() {
                   <h2 class="text-sm font-semibold text-highlighted">
                     {{ t('events.stepper.info.upload_label', 'Image de couverture') }}
                   </h2>
-                  <p class="mt-0.5 text-xs text-muted">JPG, PNG, WEBP — max {{ MAX_SIZE_MB }} Mo</p>
+                  <p class="mt-0.5 text-xs text-muted">JPG, PNG, WEBP — max 5 Mo</p>
                 </div>
                 <UButton
                   v-if="displayCover"
@@ -310,7 +327,7 @@ async function save() {
                     {{ t('events.stepper.info.cover', 'Couverture') }}
                   </UBadge>
                 </div>
-                <div v-if="coverFile" class="absolute right-2 top-2">
+                <div v-if="newCoverFile" class="absolute right-2 top-2">
                   <UBadge color="info" variant="solid" size="xs">
                     <UIcon name="i-lucide-sparkles" class="mr-1 size-3" />
                     {{ t('events.stepper.info.new_file', 'Nouvelle image') }}
@@ -321,58 +338,34 @@ async function save() {
               <UButton
                 variant="outline"
                 size="sm"
-                icon="i-lucide-image-plus"
+                icon="i-lucide-images"
                 class="w-full"
-                @click="coverInput?.click()"
+                @click="showGalleryModal = true"
               >
-                {{ t('events.stepper.info.upload_replace', 'Remplacer l\'image') }}
+                {{ t('events.stepper.info.upload_replace', 'Gérer les images') }}
               </UButton>
             </div>
 
-            <!-- Drop zone -->
+            <!-- Drop zone (aucune cover) -->
             <div
               v-else
               class="flex flex-col items-center justify-center gap-3 rounded-lg border-2
-                     border-dashed p-8 text-center transition-colors duration-200 cursor-pointer"
-              :class="isCoverDragging
-                ? 'border-primary bg-primary/5'
-                : 'border-default hover:border-primary/50 hover:bg-muted/30'"
-              @click="coverInput?.click()"
-              @dragover.prevent="isCoverDragging = true"
-              @dragleave.prevent="isCoverDragging = false"
-              @drop.prevent="onCoverDrop"
+                     border-dashed p-8 text-center transition-colors duration-200 cursor-pointer
+                     border-default hover:border-primary/50 hover:bg-muted/30"
+              @click="showGalleryModal = true"
             >
-              <div
-                class="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 transition-colors"
-                :class="isCoverDragging ? 'bg-primary/10 text-primary' : 'text-muted'"
-              >
-                <UIcon name="i-lucide-upload-cloud" class="size-5" />
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-muted">
+                <UIcon name="i-lucide-images" class="size-5" />
               </div>
               <div>
                 <p class="text-sm font-medium text-highlighted">
-                  {{ t('events.stepper.info.upload_cta', 'Glissez votre image ici') }}
+                  {{ t('events.stepper.info.upload_cta', 'Choisir ou téléverser une image') }}
                 </p>
                 <p class="mt-0.5 text-xs text-muted">
-                  {{ t('events.stepper.info.upload_or', 'ou cliquez pour parcourir') }}
+                  {{ t('events.stepper.info.upload_or', 'Cliquez pour ouvrir la galerie') }}
                 </p>
               </div>
             </div>
-
-            <!-- Error -->
-            <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0">
-              <p v-if="coverError" class="mt-2 flex items-center gap-1.5 text-xs text-error">
-                <UIcon name="i-lucide-alert-circle" class="size-3.5" />
-                {{ coverError }}
-              </p>
-            </Transition>
-
-            <input
-              ref="coverInput"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              class="hidden"
-              @change="onCoverInputChange"
-            />
           </UCard>
 
           <!-- ── Aperçu rapide ────────────────────────────── -->
@@ -418,5 +411,14 @@ async function save() {
       />
 
     </template>
+
+    <!-- ── Gallery Modal ──────────────────────────────────── -->
+    <ImageGalleryModal
+      v-model="showGalleryModal"
+      :initial-images="event?.medias ?? []"
+      @cover-changed="onCoverChanged"
+      @files-uploaded="onFilesUploaded"
+    />
+
   </div>
 </template>
