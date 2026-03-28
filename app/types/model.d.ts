@@ -1,5 +1,6 @@
 
 export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
+export type Step = "INFO" | "LOCALISATION" | "DATES"
 
 export  interface Event {
   id?: number|undefined,
@@ -26,6 +27,9 @@ export interface Address {
   countryCode: string,
   placeId?: number | null
   source: 'google' | 'manual',
+  placeName?: string
+  lat?: number
+  lng?: number
 }
 
 export interface Organizer {

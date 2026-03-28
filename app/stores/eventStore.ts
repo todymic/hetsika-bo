@@ -53,14 +53,10 @@ export const useEventStore = defineStore('event', () => {
   }
 
   const updateEvent = async (id: number, form: FormData): Promise<EventResponse> => {
-    return await put<EventResponse>(`/organizer/events/${id}`, form)
+    return await patch<EventResponse>(`/organizer/events/${id}`, form)
   }
 
-  const updateEventAddress = async (id: number, address: Address): Promise<EventResponse> => {
-    return await patch<EventResponse>(`/organizer/events/${id}/address`, {address})
-  }
-
-  const deleteEvent = async (id: number) => {
+ const deleteEvent = async (id: number) => {
     return await del(`/organizer/events/${id}`)
   }
 

@@ -34,17 +34,25 @@ export function useGooglePlaces() {
   }
 
   async function getDetails(placeId: string): Promise<{
-    street: string; city: string; zipCode: string
-    country: string; countryCode: string; lat: number; lng: number
+    street: string;
+    city: string;
+    zipCode: string
+    country: string;
+    countryCode: string;
+    lat: number;
+    lng: number,
+    placeId: string;
+    placeName: string;
   }> {
     return new Promise((resolve, reject) => {
       placesService.getDetails(
-        { placeId, fields: ['address_components', 'geometry'] },
+        { placeId, fields: ['name', 'address_components', 'geometry'] },
         (r: any, s: any) => {
           if (s !== 'OK' || !r) { reject(s); return }
           const get = (type: string) =>
             r.address_components?.find((c: any) => c.types.includes(type))
           resolve({
+            placeId:     r.place_id,
             street:      `${get('street_number')?.long_name ?? ''} ${get('route')?.long_name ?? ''}`.trim(),
             city:        get('locality')?.long_name ?? get('postal_town')?.long_name ?? '',
             zipCode:     get('postal_code')?.long_name ?? '',
@@ -52,6 +60,7 @@ export function useGooglePlaces() {
             countryCode: get('country')?.short_name ?? '',
             lat:         r.geometry?.location?.lat() ?? 0,
             lng:         r.geometry?.location?.lng() ?? 0,
+            placeName:        r.name ?? '',
           })
         }
       )

@@ -138,6 +138,8 @@
         "country_label": "Pays",
         "country_placeholder": "Sélectionnez un pays",
 
+        "place_name": "Nom du lieu",
+
         "street_label": "Adresse",
         "street_placeholder": "Renseignez la rue",
 

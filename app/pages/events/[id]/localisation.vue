@@ -7,7 +7,7 @@ definePageMeta({ layout: 'event-dashboard' })
 const { t }                            = useI18n()
 const route                            = useRoute()
 const toast                            = useToast()
-const { getEvent, updateEventAddress } = useEventStore()
+const { getEvent, updateEvent } = useEventStore()
 const { suggestions, isLoading, search, getDetails } = useGooglePlaces()
 const eventId                          = Number(route.params.id)
 
@@ -24,6 +24,9 @@ const state = ref({
   city:            '',
   zipCode:         '',
   selectedCountry: '',
+  lat: 0,
+  lng: 0,
+  placeName: ''
 })
 
 const original = ref('')
@@ -58,6 +61,7 @@ const formattedAddress = computed(() =>
 )
 
 const completenessFields = computed(() => [
+  { key: 'name',  filled: !!state.value.placeName },
   { key: 'street',  filled: !!state.value.street },
   { key: 'city',    filled: !!state.value.city },
   { key: 'zip',     filled: !!state.value.zipCode },
@@ -81,6 +85,9 @@ async function selectPlace(prediction: any) {
     state.value.city            = details.city
     state.value.zipCode         = details.zipCode
     state.value.selectedCountry = details.countryCode
+    state.value.lng             = details.lng
+    state.value.lat             = details.lat
+    state.value.placeName         = details.placeName
     mapCoords.value             = { lat: details.lat, lng: details.lng }
     query.value                 = prediction.description
     suggestions.value           = []
@@ -98,6 +105,7 @@ onMounted(async () => {
       state.value.city            = event.address.city ?? ''
       state.value.zipCode         = event.address.zipcode ?? ''
       state.value.selectedCountry = event.address.countryCode ?? ''
+      state.value.placeName       = event.address.placeName ?? ''
     }
     markSaved()
   } finally {
@@ -114,14 +122,23 @@ async function save() {
   }
   saving.value = true
   try {
-    await updateEventAddress(eventId, {
-      placeId:     state.value.placeId || undefined,
-      source:      state.value.placeId ? 'google' : 'manual',
-      street:      state.value.street,
-      city:        state.value.city,
-      zipcode:     state.value.zipCode,
-      countryCode: state.value.selectedCountry,
-    })
+    const formData = new FormData()
+    formData.append('step', "LOCALISATION")
+    formData.append('event', JSON.stringify({
+      "address": {
+        placeId:     state.value.placeId || undefined,
+        source:      state.value.placeId ? 'google' : 'manual',
+        street:      state.value.street,
+        city:        state.value.city,
+        zipcode:     state.value.zipCode,
+        countryCode: state.value.selectedCountry,
+        lat:         state.value.lat,
+        lng:         state.value.lng,
+        placeName:   state.value.placeName,
+      }
+    }
+    ))
+    await updateEvent(eventId, formData)
     markSaved()
     toast.add({ title: t('events.section.address_saved', 'Adresse enregistrée'), color: 'success' })
   } catch {
@@ -248,7 +265,11 @@ function hideSuggestions() {
                 {{ t('events.localisation.autofilled', 'Champs remplis automatiquement') }}
               </p>
               <div class="grid grid-cols-2 gap-3">
-                <div>
+                <div class="col-span-2">                                          <!-- ← pleine largeur -->
+                  <p class="text-xs text-muted">{{ t('events.stepper.localisation.place_name') }}</p>
+                  <p class="text-sm font-medium text-highlighted">{{ state.placeName }}</p>
+                </div>
+                <div class="col-span-2">                                          <!-- ← pleine largeur -->
                   <p class="text-xs text-muted">{{ t('events.stepper.localisation.street_label') }}</p>
                   <p class="text-sm font-medium text-highlighted">{{ state.street }}</p>
                 </div>
@@ -265,17 +286,6 @@ function hideSuggestions() {
                   <p class="text-sm font-medium text-highlighted">{{ state.selectedCountry }}</p>
                 </div>
               </div>
-              <UFormField :label="t('events.stepper.localisation.complement_label')" name="complement">
-                <template #hint>
-                  <span class="text-xs text-muted">{{ t('events.stepper.localisation.complement_hint', 'Optionnel') }}</span>
-                </template>
-                <UInput
-                  v-model="state.complement"
-                  :placeholder="t('events.stepper.localisation.complement_placeholder', 'Bâtiment, étage...')"
-                  leading-icon="i-lucide-building-2"
-                  class="w-full"
-                />
-              </UFormField>
             </div>
 
             <div
@@ -291,6 +301,20 @@ function hideSuggestions() {
 
           <!-- ── Manual mode ────────────────────────────── -->
           <UForm v-else :schema="schema" :state="state" class="space-y-4">
+            <UFormField :label="t('events.stepper.localisation.place_name')" name="placeName" required>
+              <UInput v-model="state.placeName" leading-icon="i-lucide-building-2" size="lg" class="w-full" />
+            </UFormField>
+            <UFormField :label="t('events.stepper.localisation.street_label')" name="street" required>
+              <UInput v-model="state.street" leading-icon="i-lucide-map-pin" size="lg" class="w-full" />
+            </UFormField>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
+              <UFormField :label="t('events.stepper.localisation.zip_label')" name="zipCode" required class="sm:col-span-2">
+                <UInput v-model="state.zipCode" leading-icon="i-lucide-hash" size="lg" class="w-full" />
+              </UFormField>
+              <UFormField :label="t('events.stepper.localisation.city_label')" name="city" required class="sm:col-span-3">
+                <UInput v-model="state.city" leading-icon="i-lucide-landmark" size="lg" class="w-full" />
+              </UFormField>
+            </div>
             <UFormField :label="t('events.stepper.localisation.country_label')" name="selectedCountry" required>
               <USelectMenu
                 v-model="state.selectedCountry"
@@ -301,23 +325,6 @@ function hideSuggestions() {
                 class="w-full"
               />
             </UFormField>
-            <UFormField :label="t('events.stepper.localisation.street_label')" name="street" required>
-              <UInput v-model="state.street" leading-icon="i-lucide-map-pin" size="lg" class="w-full" />
-            </UFormField>
-            <UFormField :label="t('events.stepper.localisation.complement_label')" name="complement">
-              <template #hint>
-                <span class="text-xs text-muted">{{ t('events.stepper.localisation.complement_hint', 'Optionnel') }}</span>
-              </template>
-              <UInput v-model="state.complement" leading-icon="i-lucide-building-2" size="lg" class="w-full" />
-            </UFormField>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
-              <UFormField :label="t('events.stepper.localisation.zip_label')" name="zipCode" required class="sm:col-span-2">
-                <UInput v-model="state.zipCode" leading-icon="i-lucide-hash" size="lg" class="w-full" />
-              </UFormField>
-              <UFormField :label="t('events.stepper.localisation.city_label')" name="city" required class="sm:col-span-3">
-                <UInput v-model="state.city" leading-icon="i-lucide-landmark" size="lg" class="w-full" />
-              </UFormField>
-            </div>
           </UForm>
         </UCard>
 
@@ -366,11 +373,9 @@ function hideSuggestions() {
               </div>
             </Transition>
           </UCard>
-
-          <EventsDashboardQuickLinks :event-id="eventId" :current="`/events/${eventId}/localisation`" />
         </div>
-
       </div>
+      <EventsDashboardQuickLinks :event-id="eventId" :current="`/events/${eventId}/localisation`" />
     </template>
   </div>
 </template>
