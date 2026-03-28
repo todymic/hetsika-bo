@@ -1,5 +1,5 @@
 <template>
-  <UDashboardPanel id="events" title="Events" class="bg-gray-100 dark:bg-gray-950">
+  <UDashboardPanel id="events" title="Events">
     <template #header>
       <UDashboardNavbar v-if="!eventId" :title="t('events.header.title')" :ui="{ right: 'gap-3' }">
         <template #leading>
